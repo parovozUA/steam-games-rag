@@ -1,0 +1,78 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.15.1
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo -n > /dev/tcp/127.0.0.1/6333"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.6-flash}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.6-luna}
+      GEMINI_RPM: ${GEMINI_RPM:-30}
+      OPENAI_RPM: ${OPENAI_RPM:-30}
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_COLLECTION: ${QDRANT_COLLECTION:-steam_games}
+      STEAM_CSV_PATH: /app/data/steam_games.csv
+      PROMPT_REGISTRY_PATH: /app/prompts/registry.yaml
+      CANONICAL_CATALOG_PATH: /app/data/canonical_values.json
+      INDEX_STATE_PATH: /app/data/indexing_state.json
+      DENSE_EMBEDDING_MODEL: ${DENSE_EMBEDDING_MODEL:-BAAI/bge-m3}
+      SPARSE_EMBEDDING_MODEL: ${SPARSE_EMBEDDING_MODEL:-Qdrant/bm25}
+      DENSE_VECTOR_SIZE: ${DENSE_VECTOR_SIZE:-1024}
+      EMBEDDING_BATCH_SIZE: ${EMBEDDING_BATCH_SIZE:-16}
+      INGESTION_BATCH_SIZE: ${INGESTION_BATCH_SIZE:-64}
+      RETRIEVAL_TEXT_MAX_CHARS: ${RETRIEVAL_TEXT_MAX_CHARS:-3000}
+      DENSE_TOP_K: ${DENSE_TOP_K:-50}
+      SPARSE_TOP_K: ${SPARSE_TOP_K:-50}
+      FUSION_TOP_K: ${FUSION_TOP_K:-30}
+      RERANK_CANDIDATES: ${RERANK_CANDIDATES:-20}
+      RESULT_LIMIT: ${RESULT_LIMIT:-10}
+      DENSE_WEIGHT: ${DENSE_WEIGHT:-0.65}
+      BM25_WEIGHT: ${BM25_WEIGHT:-0.35}
+      RRF_K: ${RRF_K:-60}
+      SEARCH_SOFT_DEADLINE_SECONDS: ${SEARCH_SOFT_DEADLINE_SECONDS:-10}
+      SEARCH_HARD_DEADLINE_SECONDS: ${SEARCH_HARD_DEADLINE_SECONDS:-15}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      CORS_ORIGINS: http://localhost:5173,http://localhost:8080,https://test.constantine.software
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - model-cache:/models
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  qdrant-data:
+  model-cache:

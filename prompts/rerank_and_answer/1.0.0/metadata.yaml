@@ -1,0 +1,7 @@
+id: rerank_and_answer
+version: 1.0.0
+description: Rerank retrieved games and write a grounded localized summary.
+input_schema: RerankAndAnswerInput
+output_schema: RerankAnswer
+created_at: 2026-08-01
+

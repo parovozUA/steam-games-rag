@@ -1,0 +1,7 @@
+id: query_understanding
+version: 1.0.0
+description: Detect language, rewrite semantic intent in English, and extract explicit filters.
+input_schema: QueryUnderstandingInput
+output_schema: QueryUnderstanding
+created_at: 2026-08-01
+

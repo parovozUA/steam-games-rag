@@ -1,0 +1,22 @@
+cases:
+  - id: en_space_coop
+    query: cooperative space survival game for Linux
+    relevant_app_ids: [10]
+    filters: {operating_systems: [linux], categories: [Co-op], tags: [Space, Survival]}
+  - id: uk_space
+    query: кооперативна космічна гра для Linux з рейтингом від 80%
+    relevant_app_ids: [10]
+    filters: {operating_systems: [linux], minimum_rating_percent: 80}
+  - id: de_strategy
+    query: taktisches Strategiespiel für macOS
+    relevant_app_ids: [30]
+    filters: {operating_systems: [mac], genres: [Strategy]}
+  - id: es_farming
+    query: juego relajante de granja para Windows
+    relevant_app_ids: [20]
+    filters: {operating_systems: [windows], tags: [Farming, Relaxing]}
+  - id: pl_ukrainian
+    query: gry z obsługą języka ukraińskiego
+    relevant_app_ids: [10]
+    filters: {supported_languages: [Ukrainian]}
+

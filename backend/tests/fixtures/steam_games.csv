@@ -1,0 +1,5 @@
+AppID,Name,Release date,About the game,Supported languages,Header image,Windows,Mac,Linux,Positive,Negative,Notes,Developers,Publishers,Categories,Genres,Tags
+10,Orbit Together,"Jan 10, 2022",A cooperative space survival adventure.,"['English', 'Ukrainian']",https://example.com/orbit.jpg,True,False,True,900,100,,"['Nova Works']","['Nova Works']","['Co-op', 'Online Co-op']","['Adventure']","['Space', 'Survival']"
+20,Quiet Farm,2020,A relaxing single-player farming game.,English,not-a-url,True,True,False,0,0,,Green Studio,Indie Pub,Single-player,Simulation,"Farming, Relaxing"
+20,Duplicate,2024,Duplicate row,English,,True,False,False,1,0,,X,Y,Single-player,Action,Duplicate
+30,Malformed Date,unknown,A tactical strategy game.,"English; German",,False,True,True,50,50,,Tactics GmbH,Tactics GmbH,Single-player,Strategy,Tactical

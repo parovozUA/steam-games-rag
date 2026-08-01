@@ -1,0 +1,67 @@
+from datetime import date
+from typing import Any, Literal
+from uuid import UUID
+
+from pydantic import BaseModel, Field, field_validator
+
+
+class SearchRequest(BaseModel):
+    query: str = Field(min_length=1, max_length=1000)
+    debug: bool = False
+
+    @field_validator("query")
+    @classmethod
+    def query_not_blank(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Query cannot be blank")
+        return value
+
+
+class Platforms(BaseModel):
+    windows: bool
+    mac: bool
+    linux: bool
+
+
+class GameResult(BaseModel):
+    app_id: int
+    name: str
+    release_date: date | None
+    about: str
+    header_image: str | None
+    platforms: Platforms
+    rating_percent: float | None
+    reviews_count: int
+    developers: list[str]
+    publishers: list[str]
+    genres: list[str]
+    categories: list[str]
+    tags: list[str]
+
+
+class SearchResponse(BaseModel):
+    request_id: UUID
+    query: str
+    summary: str
+    results: list[GameResult]
+    debug: dict[str, Any] | None = None
+
+
+class ErrorDetail(BaseModel):
+    code: str
+    message: str
+    request_id: str | None = None
+
+
+class ErrorResponse(BaseModel):
+    error: ErrorDetail
+
+
+class IndexStatusResponse(BaseModel):
+    state: Literal["waiting", "indexing", "ready", "failed"]
+    processed: int = 0
+    failed_rows: int = 0
+    point_count: int = 0
+    elapsed_seconds: float = 0
+    message: str | None = None
