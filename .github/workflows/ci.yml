@@ -21,13 +21,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with: { version: 10 }
       - uses: actions/setup-node@v4
-        with: { node-version: "22", cache: pnpm, cache-dependency-path: frontend/pnpm-lock.yaml }
-      - run: pnpm install --frozen-lockfile
+        with: { node-version: "22", cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - run: npm ci
         working-directory: frontend
-      - run: pnpm lint && pnpm test && pnpm build
+      - run: npm run lint && npm test && npm run build
         working-directory: frontend
 
   integration:
@@ -46,4 +44,3 @@ jobs:
       - run: pip install -r backend/requirements-dev.txt
       - run: pytest -m integration
         working-directory: backend
-

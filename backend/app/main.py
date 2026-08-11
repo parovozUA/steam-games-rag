@@ -14,11 +14,9 @@ from app.observability.logging import configure_logging
 from app.prompts.loader import PromptLoader
 from app.providers.embeddings.local import LocalEmbeddingProvider
 from app.providers.llm.gemini import GeminiAdapter
-from app.providers.llm.openai import OpenAIAdapter
-from app.providers.llm.unavailable import UnavailableLLMAdapter
 from app.providers.vector_store.qdrant import QdrantVectorStore
 from app.rag.pipeline import SearchPipeline
-from app.services.indexing import IndexingCoordinator
+from app.services.canonicalization import CanonicalCatalog
 
 logger = logging.getLogger(__name__)
 
@@ -37,37 +35,20 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             settings.dense_vector_size,
         )
         vector_store = QdrantVectorStore(settings.qdrant_url, settings.qdrant_collection)
-        indexing = IndexingCoordinator(
-            vector_store=vector_store,
-            embeddings=embeddings,
-            csv_path=settings.steam_csv_path,
-            catalog_path=settings.canonical_catalog_path,
-            state_path=settings.index_state_path,
-            batch_size=settings.ingestion_batch_size,
-            max_retrieval_chars=settings.retrieval_text_max_chars,
-        )
-        gemini = (
-            GeminiAdapter(settings.gemini_api_key, settings.gemini_model, settings.gemini_rpm)
-            if settings.gemini_api_key
-            else UnavailableLLMAdapter("gemini", settings.gemini_model)
-        )
-        openai = (
-            OpenAIAdapter(settings.openai_api_key, settings.openai_model, settings.openai_rpm)
-            if settings.openai_api_key
-            else UnavailableLLMAdapter("openai", settings.openai_model)
-        )
-        app.state.indexing = indexing
+        
+        if not settings.gemini_api_key:
+            raise RuntimeError("GEMINI_API_KEY environment variable is required")
+            
+        gemini = GeminiAdapter(settings.gemini_api_key, settings.gemini_model, settings.gemini_rpm)
+        catalog = CanonicalCatalog.load(settings.canonical_catalog_path)
         app.state.pipeline = SearchPipeline(
             settings=settings,
-            indexing=indexing,
             embeddings=embeddings,
             vector_store=vector_store,
             prompts=prompts,
             gemini=gemini,
-            openai=openai,
-            catalog=lambda: indexing.catalog,
+            catalog=lambda: catalog,
         )
-        await indexing.initialize(settings.qdrant_startup_timeout_seconds)
         yield
         await vector_store.close()
 

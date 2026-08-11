@@ -17,6 +17,10 @@ describe("App", () => {
     await waitFor(() => expect(screen.getByRole("button", { name: "Search" })).toBeEnabled());
     await userEvent.click(screen.getByRole("button", { name: "Search" }));
     expect(await screen.findByText("Orbit Together")).toBeInTheDocument();
+    const steamLink = screen.getByRole("link", { name: /Orbit Together/ });
+    expect(steamLink).toHaveAttribute("href", "https://store.steampowered.com/app/10");
+    expect(steamLink).toHaveAttribute("target", "_blank");
+    expect(steamLink).toHaveAttribute("rel", "noopener noreferrer");
     expect(screen.queryByLabelText("Search diagnostics")).not.toBeInTheDocument();
     await userEvent.click(screen.getByLabelText("Show search diagnostics"));
     await userEvent.click(screen.getByRole("button", { name: "Search" }));

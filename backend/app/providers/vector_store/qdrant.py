@@ -142,33 +142,32 @@ class QdrantVectorStore:
         ]
         await self.client.upsert(self.collection, points=points, wait=True)
 
-    async def dense_search(
-        self, vector: Sequence[float], filters: SearchFilters, limit: int
-    ) -> list[RetrievalHit]:
-        result = await self.client.query_points(
-            collection_name=self.collection,
-            query=list(vector),
-            using="dense",
-            query_filter=build_qdrant_filter(filters),
-            limit=limit,
-            with_payload=True,
-        )
-        return [
-            RetrievalHit(int(point.id), dict(point.payload or {}), float(point.score))
-            for point in result.points
-        ]
-
-    async def sparse_search(
+    async def hybrid_search(
         self,
-        vector: tuple[Sequence[int], Sequence[float]],
+        dense_vector: Sequence[float],
+        sparse_vector: tuple[Sequence[int], Sequence[float]],
         filters: SearchFilters,
         limit: int,
     ) -> list[RetrievalHit]:
+        qdrant_filter = build_qdrant_filter(filters)
+        prefetch = [
+            models.Prefetch(
+                query=list(dense_vector),
+                using="dense",
+                limit=limit,
+                filter=qdrant_filter,
+            ),
+            models.Prefetch(
+                query=models.SparseVector(indices=list(sparse_vector[0]), values=list(sparse_vector[1])),
+                using="bm25",
+                limit=limit,
+                filter=qdrant_filter,
+            ),
+        ]
         result = await self.client.query_points(
             collection_name=self.collection,
-            query=models.SparseVector(indices=list(vector[0]), values=list(vector[1])),
-            using="bm25",
-            query_filter=build_qdrant_filter(filters),
+            prefetch=prefetch,
+            query=models.FusionQuery(fusion=models.Fusion.RRF),
             limit=limit,
             with_payload=True,
         )

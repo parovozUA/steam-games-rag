@@ -21,22 +21,19 @@ class LocalEmbeddingProvider:
             return
         async with self._load_lock:
             if self._dense is None:
-                from fastembed import SparseTextEmbedding
-                from sentence_transformers import SentenceTransformer
+                from fastembed import SparseTextEmbedding, TextEmbedding
 
                 self._dense = await asyncio.to_thread(
-                    SentenceTransformer, self.dense_model_name, device="cpu"
+                    TextEmbedding, self.dense_model_name
                 )
-                self._sparse = await asyncio.to_thread(SparseTextEmbedding, self.sparse_model_name)
+                self._sparse = await asyncio.to_thread(
+                    SparseTextEmbedding, self.sparse_model_name
+                )
 
     async def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
         await self._ensure_loaded()
         result = await asyncio.to_thread(
-            self._dense.encode,
-            list(texts),
-            batch_size=self.batch_size,
-            normalize_embeddings=True,
-            show_progress_bar=False,
+            lambda: list(self._dense.embed(list(texts), batch_size=self.batch_size))
         )
         return [vector.tolist() for vector in result]
 
@@ -45,7 +42,7 @@ class LocalEmbeddingProvider:
 
     async def sparse_documents(self, texts: Sequence[str]) -> list[tuple[list[int], list[float]]]:
         await self._ensure_loaded()
-        values = await asyncio.to_thread(lambda: list(self._sparse.embed(list(texts))))
+        values = await asyncio.to_thread(lambda: list(self._sparse.embed(list(texts), batch_size=self.batch_size)))
         return [(item.indices.tolist(), item.values.tolist()) for item in values]
 
     async def sparse_query(self, text: str) -> tuple[list[int], list[float]]:

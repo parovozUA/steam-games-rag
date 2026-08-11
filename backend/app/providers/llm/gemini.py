@@ -4,12 +4,21 @@ from typing import TypeVar
 from aiolimiter import AsyncLimiter
 from google import genai
 from google.genai import types
+from google.genai.errors import APIError
 from pydantic import BaseModel, ValidationError
 
-from app.providers.llm.errors import FailureCategory, ProviderFailure, classify_status
+from app.providers.llm.errors import FailureCategory, ProviderFailure
 
 T = TypeVar("T", bound=BaseModel)
 
+def classify_gemini_status(status_code: int) -> tuple[FailureCategory, bool]:
+    if status_code == 429:
+        return FailureCategory.RATE_LIMIT, True
+    if status_code >= 500:
+        return FailureCategory.SERVER, True
+    if status_code in {401, 403}:
+        return FailureCategory.AUTH, False
+    return FailureCategory.INVALID_REQUEST, False
 
 class GeminiAdapter:
     name = "gemini"
@@ -31,30 +40,47 @@ class GeminiAdapter:
                         config=types.GenerateContentConfig(
                             system_instruction=system,
                             response_mime_type="application/json",
-                            response_json_schema=response_model.model_json_schema(),
-                            temperature=0,
-                            thinking_config=types.ThinkingConfig(thinking_budget=0),
-                        ),
+                            response_schema=response_model,
+                            temperature=0.1,
+                        )
                     )
-            return response_model.model_validate_json(response.text)
-        except TimeoutError as exc:
-            raise ProviderFailure("Gemini timed out", FailureCategory.TIMEOUT, True) from exc
-        except (ValidationError, TypeError) as exc:
-            raise ProviderFailure(
-                "Gemini output failed validation", FailureCategory.INVALID_OUTPUT, False
-            ) from exc
+            if not response.text:
+                raise ProviderFailure(
+                    "Gemini returned no output", FailureCategory.INVALID_OUTPUT, False
+                )
+            
+            try:
+                return response_model.model_validate_json(response.text)
+            except ValidationError as exc:
+                raise ProviderFailure(
+                    "Gemini output failed validation", FailureCategory.INVALID_OUTPUT, False
+                ) from exc
         except ProviderFailure:
             raise
-        except Exception as exc:
-            status_value = getattr(exc, "status_code", 0) or getattr(exc, "code", 0) or 0
-            try:
-                status = int(status_value)
-            except (TypeError, ValueError):
-                status = 0
-            if status:
-                category, retryable = classify_status(status)
-            elif isinstance(exc, ConnectionError | OSError):
-                category, retryable = FailureCategory.NETWORK, True
-            else:
-                category, retryable = FailureCategory.UNKNOWN, False
-            raise ProviderFailure("Gemini request failed", category, retryable) from exc
+        except TimeoutError as exc:
+            raise ProviderFailure("Gemini timed out", FailureCategory.TIMEOUT, True) from exc
+        except APIError as exc:
+            category, retryable = classify_gemini_status(exc.code)
+            raise ProviderFailure(f"Gemini request failed: {exc.message}", category, retryable) from exc
+
+    async def stream_chat(
+        self, *, system: str, user: str, timeout_seconds: float
+    ):
+        try:
+            async with asyncio.timeout(timeout_seconds):
+                async with self.limiter:
+                    stream = await self.client.aio.models.generate_content_stream(
+                        model=self.model,
+                        contents=user,
+                        config=types.GenerateContentConfig(
+                            system_instruction=system,
+                        )
+                    )
+                    async for chunk in stream:
+                        if chunk.text:
+                            yield chunk.text
+        except TimeoutError as exc:
+            raise ProviderFailure("Gemini timed out", FailureCategory.TIMEOUT, True) from exc
+        except APIError as exc:
+            category, retryable = classify_gemini_status(exc.code)
+            raise ProviderFailure(f"Gemini request failed: {exc.message}", category, retryable) from exc

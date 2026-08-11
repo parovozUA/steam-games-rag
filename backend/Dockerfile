@@ -12,6 +12,7 @@ COPY backend/requirements.txt /tmp/requirements.txt
 RUN pip install --index-url https://download.pytorch.org/whl/cpu torch==2.8.0 && \
     pip install -r /tmp/requirements.txt
 COPY backend/app /app/app
+COPY backend/data_pipeline /app/data_pipeline
 COPY prompts /app/prompts
 
 EXPOSE 8000

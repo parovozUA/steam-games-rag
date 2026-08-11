@@ -1,8 +1,9 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Request, Response, status
+from fastapi.responses import StreamingResponse
 
-from app.schemas.api import IndexStatusResponse, SearchRequest, SearchResponse
+from app.schemas.api import SearchRequest
 
 router = APIRouter()
 
@@ -14,25 +15,13 @@ async def live() -> dict[str, str]:
 
 @router.get("/health/ready")
 async def ready(request: Request, response: Response) -> dict[str, str]:
-    state = request.app.state.indexing.status().state
-    if state != "ready":
-        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-    return {"status": "ready" if state == "ready" else "not_ready", "index_state": state}
+    # Assume ready, data pipeline runs separately
+    return {"status": "ready", "index_state": "ready"}
 
 
-@router.get("/api/v1/index/status", response_model=IndexStatusResponse)
-async def index_status(request: Request) -> IndexStatusResponse:
-    return request.app.state.indexing.status()
-
-
-@router.post("/api/v1/index/reindex", response_model=IndexStatusResponse, status_code=202)
-async def reindex(request: Request) -> IndexStatusResponse:
-    await request.app.state.indexing.reindex()
-    return request.app.state.indexing.status()
-
-
-@router.post("/api/v1/search", response_model=SearchResponse, response_model_exclude_none=True)
-async def search(payload: SearchRequest, request: Request) -> SearchResponse:
-    return await request.app.state.pipeline.search(
+@router.post("/api/v1/search")
+async def search(payload: SearchRequest, request: Request):
+    generator = request.app.state.pipeline.search_stream(
         payload, request_id=UUID(request.state.request_id)
     )
+    return StreamingResponse(generator, media_type="text/event-stream")

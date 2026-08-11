@@ -8,7 +8,7 @@ down:
 
 test:
 	cd backend && python -m pytest -m unit
-	cd frontend && pnpm test
+	cd frontend && npm test
 
 test-integration:
 	docker compose up -d qdrant
@@ -19,8 +19,7 @@ eval:
 
 lint:
 	cd backend && ruff check . && ruff format --check .
-	cd frontend && pnpm lint && pnpm build
+	cd frontend && npm run lint && npm run build
 
 reindex:
 	curl -fsS -X POST http://localhost:8000/api/v1/index/reindex
-

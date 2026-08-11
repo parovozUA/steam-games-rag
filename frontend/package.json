@@ -2,7 +2,7 @@
   "name": "steam-games-rag-frontend",
   "private": true,
   "version": "0.1.0",
-  "packageManager": "pnpm@10.15.0",
+  "packageManager": "npm@10.9.2",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",

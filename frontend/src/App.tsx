@@ -1,5 +1,5 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
-import type { ApiError, Game, IndexStatus, SearchResponse } from "./types";
+import { FormEvent, useRef, useState } from "react";
+import type { ApiError, Game } from "./types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -9,7 +9,13 @@ function GameCard({ game }: { game: Game }) {
     .filter(([, supported]) => supported)
     .map(([name]) => (name === "mac" ? "macOS" : name[0].toUpperCase() + name.slice(1)));
   return (
-    <article className="game-card">
+    <a
+      className="game-link"
+      href={`https://store.steampowered.com/app/${game.app_id}`}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <article className="game-card">
       <div className="image-wrap">
         {game.header_image && !imageFailed ? (
           <img src={game.header_image} alt="" onError={() => setImageFailed(true)} />
@@ -39,6 +45,7 @@ function GameCard({ game }: { game: Game }) {
         )}
       </div>
     </article>
+    </a>
   );
 }
 
@@ -51,8 +58,6 @@ function Diagnostics({ value }: { value: Record<string, unknown> }) {
       <dl>
         <div><dt>Language</dt><dd>{String(value.detected_language ?? "—")}</dd></div>
         <div><dt>English query</dt><dd>{String(value.rewritten_query_en ?? "—")}</dd></div>
-        <div><dt>Fallback</dt><dd>{value.fallback_activated ? "OpenAI active" : "No"}</dd></div>
-        <div><dt>Gemini attempts</dt><dd>{String(value.gemini_attempts ?? 0)}</dd></div>
         {Object.entries(providers).map(([stage, provider]) => (
           <div key={stage}><dt>{stage}</dt><dd>{provider.provider} · {provider.model}</dd></div>
         ))}
@@ -68,30 +73,14 @@ function Diagnostics({ value }: { value: Record<string, unknown> }) {
 export default function App() {
   const [query, setQuery] = useState("");
   const [debug, setDebug] = useState(false);
-  const [index, setIndex] = useState<IndexStatus | null>(null);
-  const [result, setResult] = useState<SearchResponse | null>(null);
+  const [results, setResults] = useState<Game[]>([]);
+  const [summary, setSummary] = useState("");
+  const [diagnostics, setDiagnostics] = useState<Record<string, unknown> | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<ApiError["error"] | null>(null);
   const [loading, setLoading] = useState(false);
   const activeRequest = useRef<{ id: number; controller: AbortController } | null>(null);
   const sequence = useRef(0);
-
-  useEffect(() => {
-    let stopped = false;
-    const controller = new AbortController();
-    const poll = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/v1/index/status`, { signal: controller.signal });
-        if (response.ok && !stopped) setIndex(await response.json());
-      } catch (caught) {
-        if (!stopped && (caught as Error).name !== "AbortError") {
-          setIndex({ state: "failed", processed: 0, failed_rows: 0, point_count: 0, elapsed_seconds: 0, message: "Backend is unreachable" });
-        }
-      }
-    };
-    void poll();
-    const timer = window.setInterval(poll, 2000);
-    return () => { stopped = true; controller.abort(); window.clearInterval(timer); };
-  }, []);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -100,8 +89,14 @@ export default function App() {
     const id = ++sequence.current;
     const controller = new AbortController();
     activeRequest.current = { id, controller };
+    
     setLoading(true);
     setError(null);
+    setResults([]);
+    setSummary("");
+    setDiagnostics(null);
+    setHasSearched(true);
+
     try {
       const response = await fetch(`${API_URL}/api/v1/search`, {
         method: "POST",
@@ -109,21 +104,62 @@ export default function App() {
         body: JSON.stringify({ query: query.trim(), debug }),
         signal: controller.signal,
       });
-      const body = await response.json();
-      if (activeRequest.current?.id !== id) return;
-      if (!response.ok) throw body as ApiError;
-      setResult(body as SearchResponse);
+
+      if (!response.ok) {
+        const body = await response.json();
+        throw body;
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("Stream not readable");
+
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (activeRequest.current?.id !== id) return;
+
+        buffer += decoder.decode(value, { stream: true });
+        
+        const chunks = buffer.split("\n\n");
+        buffer = chunks.pop() || "";
+
+        for (const chunk of chunks) {
+          if (!chunk.trim()) continue;
+          
+          let eventType = "message";
+          let data = "";
+          
+          for (const line of chunk.split("\n")) {
+            if (line.startsWith("event: ")) {
+              eventType = line.slice("event: ".length).trim();
+            } else if (line.startsWith("data: ")) {
+              data = line.slice("data: ".length).trim();
+            }
+          }
+
+          if (eventType === "results" && data) {
+            const parsed = JSON.parse(data);
+            setResults(parsed.results || []);
+            setDiagnostics(parsed.debug || null);
+          } else if (eventType === "summary_chunk" && data) {
+            const parsedChunk = JSON.parse(data);
+            setSummary(prev => prev + parsedChunk);
+          }
+        }
+      }
     } catch (caught) {
       if ((caught as Error).name === "AbortError" || activeRequest.current?.id !== id) return;
       const apiError = caught as ApiError;
       setError(apiError.error ?? { code: "NETWORK_ERROR", message: "Could not reach the search service." });
-      setResult(null);
+      setHasSearched(false);
     } finally {
       if (activeRequest.current?.id === id) setLoading(false);
     }
   };
 
-  const ready = index?.state === "ready";
   return (
     <main>
       <header className="hero">
@@ -132,24 +168,17 @@ export default function App() {
         <p>Search Steam’s catalog naturally, in any language.</p>
         <form onSubmit={submit}>
           <input aria-label="Search games" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Try: cooperative space survival for Linux…" />
-          <button disabled={loading || !ready || !query.trim()}>{loading ? "Searching…" : "Search"}</button>
+          <button disabled={loading || !query.trim()}>{loading ? "Searching…" : "Search"}</button>
         </form>
         <label className="debug-toggle"><input type="checkbox" checked={debug} onChange={(event) => setDebug(event.target.checked)} /> Show search diagnostics</label>
       </header>
 
-      {index && !ready && (
-        <section className={`status ${index.state}`} role="status">
-          <strong>{index.state === "failed" ? "Indexing needs attention" : "Preparing the game index"}</strong>
-          <span>{index.message ?? `${index.processed.toLocaleString()} games processed`}</span>
-          {index.state === "indexing" && <progress />}
-        </section>
-      )}
       {error && <section className="error-state" role="alert"><strong>{error.code}</strong><p>{error.message}</p>{error.request_id && <small>Request {error.request_id}</small>}</section>}
-      {result && (
+      {hasSearched && !error && (
         <section className="results">
-          <div className="summary"><span>AI SUMMARY</span><p>{result.summary}</p></div>
-          {result.results.length === 0 ? <div className="empty">No games to show. Try broadening the filters.</div> : result.results.map((game) => <GameCard key={game.app_id} game={game} />)}
-          {debug && result.debug && <Diagnostics value={result.debug} />}
+          <div className="summary"><span>AI SUMMARY</span><p>{summary || (loading ? "Thinking..." : "")}</p></div>
+          {results.length === 0 && !loading ? <div className="empty">No games to show. Try broadening the filters.</div> : results.map((game) => <GameCard key={game.app_id} game={game} />)}
+          {debug && diagnostics && <Diagnostics value={diagnostics} />}
         </section>
       )}
     </main>

@@ -40,14 +40,6 @@ class GameResult(BaseModel):
     tags: list[str]
 
 
-class SearchResponse(BaseModel):
-    request_id: UUID
-    query: str
-    summary: str
-    results: list[GameResult]
-    debug: dict[str, Any] | None = None
-
-
 class ErrorDetail(BaseModel):
     code: str
     message: str
@@ -56,12 +48,3 @@ class ErrorDetail(BaseModel):
 
 class ErrorResponse(BaseModel):
     error: ErrorDetail
-
-
-class IndexStatusResponse(BaseModel):
-    state: Literal["waiting", "indexing", "ready", "failed"]
-    processed: int = 0
-    failed_rows: int = 0
-    point_count: int = 0
-    elapsed_seconds: float = 0
-    message: str | None = None

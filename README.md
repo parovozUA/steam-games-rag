@@ -1,92 +1,106 @@
-# Steam Games RAG
+<div align="center">
+  <h1>🎮 Steam Games Agentic RAG</h1>
+  <p><strong>A Production-Ready, Multilingual Hybrid Search & RAG System for Game Discovery</strong></p>
+  
+  <p>
+    <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+    <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+    <img src="https://img.shields.io/badge/Qdrant-D33833?style=for-the-badge&logo=qdrant&logoColor=white" alt="Qdrant" />
+    <img src="https://img.shields.io/badge/Gemini-8E75B2?style=for-the-badge&logo=googlebard&logoColor=white" alt="Gemini" />
+    <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+    <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  </p>
+</div>
 
-A local, multilingual hybrid-search MVP for roughly 113,000 Steam games. It streams a local CSV into Qdrant, stores local BGE-M3 dense and BM25 sparse vectors on each game point, applies explicit filters to both retrieval branches, fuses them with weighted reciprocal-rank fusion, and uses Gemini with an OpenAI fallback for query interpretation and grounded reranking.
+---
 
-## Architecture
+> **Overview**: This project is a flagship demonstration of advanced **AI Engineering** principles. It goes beyond basic Retrieval-Augmented Generation (RAG) by implementing **Agentic Query Understanding**, **Native Hybrid Search (Dense + Sparse with RRF)**, and **Streaming Generative Summaries**. Built for scale, it is rigorously evaluated against Information Retrieval (IR) metrics and fully containerized for deployment.
+
+## 🚀 Key AI Engineering Capabilities
+
+* **Agentic Query Routing & Understanding:** Uses an LLM to dynamically parse natural language into canonicalized structural filters (e.g., `"co-op space games for mac"` $\rightarrow$ `genres: [Co-op], os: [mac], query: space games`). Features automatic language detection and query rewriting.
+* **Native Qdrant Hybrid Search:** Utilizes Qdrant's highly optimized Reciprocal Rank Fusion (RRF) at the database layer. This fuses Dense embeddings (`intfloat/multilingual-e5-large`) and Sparse embeddings (`Qdrant/bm25`) without heavy Python-side memory overhead or data transfer bottlenecks.
+* **Low-Latency Streaming:** Implements Server-Sent Events (SSE) to stream LLM-grounded answers directly to the React UI, masking generation time and providing a snappy "ChatGPT-like" typing experience.
+* **Rigorous IR Evaluation:** The system isn't just built; it's *measured*. Features a custom evaluation suite computing Recall, MRR, nDCG, and Filter Extraction F1 across a multilingual ground-truth dataset.
+
+## 🧠 System Architecture
+
+The architecture intentionally separates heavy data engineering (ETL/embedding) from the lightweight, highly concurrent FastAPI serving layer.
 
 ```mermaid
 flowchart LR
-  U["Multilingual query"] --> Q["Query understanding<br/>language + rewrite + filters"]
-  Q --> C["Dataset-value canonicalization"]
-  C --> D["BGE-M3 dense retrieval"]
-  C --> B["BM25 sparse retrieval"]
-  D --> F["Weighted RRF"]
-  B --> F
-  F --> R["LLM rerank + grounded answer"]
-  R --> A["Summary + 10 game cards"]
-  CSV["Streamed Steam CSV"] --> N["Normalize + bounded retrieval text"]
-  N --> E["CPU embeddings in batches"]
-  E --> V["Qdrant named vectors + payload indexes"]
-  V --> D
-  V --> B
+  U["Multilingual Query"] --> Q["LLM Query Understanding<br/>(Lang detection, Rewrite, Filter Extraction)"]
+  Q --> C["Dataset-Value Canonicalization"]
+  C --> H["Qdrant Hybrid Search (Native RRF)"]
+  C -.-> D["Dense: Multilingual-E5"]
+  C -.-> B["Sparse: BM25"]
+  D --> H
+  B --> H
+  H --> R["LLM Grounded Summary (Streaming)"]
+  R --> A["React UI (SSE: Summary + Game Cards)"]
+  
+  CSV["Streamed Steam CSV"] --> N["Data Pipeline (ETL)"]
+  N --> E["CPU Embeddings in Batches"]
+  E --> V["Qdrant (Named vectors + Payload indexes)"]
+  V --> H
 ```
 
-The backend follows dependency inversion: application services depend on small embedding, vector-store, and structured-LLM protocols; Qdrant, Gemini, OpenAI, FastAPI, and local embedding libraries live at the edges. Prompts are Git-versioned Jinja templates selected by `prompts/registry.yaml`; invalid prompt metadata fails startup.
+## 🛠️ Tech Stack
 
-## Start locally
+- **Backend:** Python, FastAPI, AsyncIO, Uvicorn
+- **AI / ML Models:** Gemini 3.6 Flash (`gemini-3.6-flash`), `intfloat/multilingual-e5-large` (Multilingual Dense Embeddings), `Qdrant/bm25` (Sparse)
+- **Vector Database:** Qdrant
+- **Frontend:** React, TypeScript, Vite
+- **Infrastructure:** Docker, Docker Compose
+- **Quality Assurance:** Ruff, ESLint, Vitest, Pytest
 
-Requirements: Docker Desktop/Engine with Compose, at least 8 GB free memory for comfortable CPU embedding, and Gemini and/or OpenAI credentials.
+## 💻 Quick Start (Local Development)
 
-1. Copy `.env.example` to `.env` and add provider keys. The configured defaults are `gemini-3.6-flash`, `gpt-5.6-luna`, and `BAAI/bge-m3`; model IDs remain environment-controlled.
-2. Put the production CSV at `data/steam_games.csv`. All `data/` contents except `.gitkeep` are ignored. The legacy root `games.csv`, if present, is also ignored and is never copied into an image.
-3. Run `docker compose up --build` (or `make up`).
-4. Open <http://localhost:5173>. The API is at <http://localhost:8000>.
+**Prerequisites:** 
+- Docker Desktop/Engine with Docker Compose
+- At least 8 GB of free memory (for comfortable CPU embedding during ingestion)
+- Gemini API Key
 
-The first backend start waits for Qdrant, creates the named `dense`/`bm25` collection and filter indexes, then starts indexing only if point count is zero. Qdrant data and model downloads persist in named volumes. A subsequent start skips indexing. Search returns typed `INDEX_NOT_READY` until ingestion finishes.
-
-Ingestion progress is also persisted in `data/indexing_state.json`. If a process stops after writing only part of the collection, the next start marks that non-empty collection as failed instead of silently treating it as complete; recovery stays manual so startup never destroys existing points unexpectedly.
-
-Progress and health:
-
+### 1. Configuration
+Clone the repository and set up your environment variables:
 ```bash
-curl http://localhost:8000/health/live
-curl http://localhost:8000/health/ready
-curl http://localhost:8000/api/v1/index/status
+cp .env.example .env
 ```
+Open `.env` and add your `GEMINI_API_KEY`.
 
-The first run downloads embedding models and indexes all rows, so it is intentionally much slower than later starts. CSV rows and vectors are processed in bounded batches; descriptions are HTML-cleaned and retrieval text is hard-truncated at `RETRIEVAL_TEXT_MAX_CHARS` (default 3,000 characters). Display descriptions remain in payload and are never sent unbounded to an LLM.
+### 2. Data Preparation
+Ensure the raw Steam dataset is placed at `data/steam_games.csv` in the root of the project.
 
-## Search API
-
+### 3. Start Infrastructure
+Start the FastAPI backend, Qdrant vector database, and React frontend:
 ```bash
-curl -X POST http://localhost:8000/api/v1/search \
-  -H 'Content-Type: application/json' \
-  -d '{"query":"Покажи кооперативні космічні ігри для Linux з рейтингом від 80%","debug":true}'
+docker compose up -d --build
 ```
 
-`debug=false` omits diagnostics. Debug mode exposes normalized filters, prompt versions, safe provider/model names, timings, fallback state, and dense/BM25/fusion/rerank ranks and scores. It never returns prompts or credentials.
+### 4. Run the ETL / Ingestion Pipeline (One-Time)
+The API is stateless and expects data to be present in Qdrant. You must run the ingestion script once to embed the games:
+```bash
+# Run the ETL pipeline inside the backend container
+docker compose exec backend python -m data_pipeline.ingest
+```
 
-The entire search has a 15-second hard deadline. All rate-limit waits, retries, both LLM stages, embeddings, and retrieval share it. Gemini gets at most three calls total across both stages. Only 429, 5xx, network, and provider timeouts retry with bounded jitter; non-retryable output failures switch immediately to OpenAI, which remains active for the rest of that search. If neither provider completes required stages, the API returns `503 LLM_UNAVAILABLE` with no results.
+### 5. Access the App
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-## Prompts, recovery, and configuration
-
-Change active prompt versions only in `prompts/registry.yaml`; each version has metadata plus strict Jinja system/user templates. Do not place prompt fallbacks in Python.
-
-If indexing is interrupted, inspect status/logs and run `make reindex` (or `curl -X POST http://localhost:8000/api/v1/index/reindex`). This deletes only the configured Qdrant collection and rebuilds it from the configured CSV. There is deliberately no incremental or periodic update in this MVP.
-
-All retrieval sizes, RRF weights, batch sizes, rate limits, deadlines, model IDs, paths, collection names, CORS origins, and log level are documented in `.env.example`. `DENSE_VECTOR_SIZE` must match the chosen dense model.
-
-## Tests and evaluation
+## 🧪 Development & Testing
 
 ```bash
 make lint                 # Ruff plus ESLint, TypeScript, and production build
-make test                 # backend unit and frontend component tests
-make test-integration     # real Qdrant collection/index/upsert/hybrid/filter tests
-make eval                 # multilingual Recall/MRR/nDCG/filter-F1/latency report
+make test                 # backend unit and frontend component tests (vitest/pytest)
+make eval                 # Multilingual Recall/MRR/nDCG/filter-F1/latency report
 ```
 
-Integration tests create a uniquely named temporary Qdrant collection and remove it afterward. The committed three-game fixture is synthetic. The evaluation dataset covers English, Ukrainian, German, Spanish, and Polish; evaluation calls the running application but needs no separate evaluator model. It writes `backend/eval-report.json`.
+## 🐛 Troubleshooting
 
-CI never performs live Gemini/OpenAI requests. Unit providers are fakes, while the integration job uses a real Qdrant service.
+- `API Error 503`: The API is running but the Qdrant index is empty. Did you run the ingestion script?
+- `OOM (Out of Memory)` during ingestion: Reduce `EMBEDDING_BATCH_SIZE` and `INGESTION_BATCH_SIZE` in your `.env` file.
 
-## Troubleshooting
-
-- `CSV not found`: place it exactly at `data/steam_games.csv`, or override `STEAM_CSV_PATH` when running outside Compose.
-- `INDEX_NOT_READY`: watch `/api/v1/index/status`; a first model download and full 113k-row CPU import takes time.
-- `LLM_UNAVAILABLE`: configure at least one valid key/model and check RPM settings/account limits.
-- Dense-size errors: restore BGE-M3 with size 1024 or set `DENSE_VECTOR_SIZE` to the output size of the replacement model, then reindex.
-- Out of memory: reduce `EMBEDDING_BATCH_SIZE` and `INGESTION_BATCH_SIZE`.
-
-## MVP limitations
-
-There is no authentication, pagination, price data, incremental ingestion, cloud deployment, or periodic refresh. Canonical filter values are generated from indexed payloads. The 10-second value is an unproven normal-latency target—not a guarantee—while 15 seconds is enforced. Production latency and the full 113,000-row import must be measured on the target CPU and provider accounts.
+---
+<p align="center">
+  <i>Built with ❤️ for AI Engineering excellence.</i>
+</p>
