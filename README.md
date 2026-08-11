@@ -12,7 +12,7 @@
   </p>
 
   <p>
-    <a href="https://steam.constantine.software/">
+    <a href="https://steam.constantine.software/" target="_blank">
       <kbd> <br> <big><big><strong>🔴 TRY THE LIVE DEMO 🔴</strong></big></big> <br> </kbd>
     </a>
   </p>
