@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from app.services.csv_games import normalize_row, stream_games
+from data_pipeline.csv_games import normalize_row, stream_games
 
 pytestmark = pytest.mark.unit
 

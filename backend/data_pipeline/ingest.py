@@ -3,7 +3,6 @@ import itertools
 import logging
 import sys
 import time
-from pathlib import Path
 
 from app.core.config import get_settings
 from app.providers.embeddings.local import LocalEmbeddingProvider
@@ -40,7 +39,10 @@ async def main():
         count = await vector_store.count()
         if count > 0 and not force:
             logger.info(f"Index already contains {count} games. Skipping ingestion.")
-            logger.info("If you want to reindex, run with --force flag: python -m data_pipeline.ingest --force")
+            logger.info(
+                "If you want to reindex, run with --force flag: "
+                "python -m data_pipeline.ingest --force"
+            )
             await vector_store.close()
             return
     except Exception:
