@@ -54,7 +54,7 @@ describe("App", () => {
     });
 
     render(<App />);
-    const input = screen.getByLabelText("Search games");
+    const input = screen.getByRole("textbox", { name: "Search games" });
     await userEvent.type(input, "space");
     await waitFor(() => expect(screen.getByRole("button", { name: "Search" })).toBeEnabled());
     await userEvent.click(screen.getByRole("button", { name: "Search" }));
@@ -75,7 +75,7 @@ describe("App", () => {
     vi.spyOn(globalThis, "fetch").mockRejectedValue(new TypeError("Failed to fetch"));
 
     render(<App />);
-    const input = screen.getByLabelText("Search games");
+    const input = screen.getByRole("textbox", { name: "Search games" });
     await userEvent.type(input, "space");
     await userEvent.click(screen.getByRole("button", { name: "Search" }));
 
