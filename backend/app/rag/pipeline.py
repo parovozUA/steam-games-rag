@@ -2,8 +2,7 @@ import asyncio
 import json
 import logging
 import time
-from typing import Any
-from collections.abc import Callable, AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 from uuid import UUID, uuid4
 
 from app.core.config import Settings
@@ -92,7 +91,11 @@ class SearchPipeline:
             }
 
         # Yield results first so UI can render cards immediately
-        yield f"event: results\ndata: {json.dumps({'results': [r.model_dump(mode='json') for r in results], 'debug': debug}, ensure_ascii=False)}\n\n"
+        results_payload = {
+            "results": [r.model_dump(mode="json") for r in results],
+            "debug": debug,
+        }
+        yield f"event: results\ndata: {json.dumps(results_payload, ensure_ascii=False)}\n\n"
 
         # 4. Stream Summary
         if results:

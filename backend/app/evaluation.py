@@ -8,6 +8,7 @@ from pathlib import Path
 
 import httpx
 import yaml
+from anyio import Path as AsyncPath
 
 
 def ranking_metrics(expected: list[int], actual: list[int]) -> tuple[float, float, float]:
@@ -47,7 +48,8 @@ def percentile(values: list[float], p: float) -> float:
 
 
 async def evaluate(dataset: Path, api_url: str, output: Path) -> dict:
-    cases = yaml.safe_load(dataset.read_text(encoding="utf-8"))["cases"]
+    dataset_content = await AsyncPath(dataset).read_text(encoding="utf-8")
+    cases = yaml.safe_load(dataset_content)["cases"]
     recalls, mrrs, ndcgs, filter_scores, latencies = [], [], [], [], []
     details = []
     async with httpx.AsyncClient(timeout=20) as client:
@@ -90,7 +92,7 @@ async def evaluate(dataset: Path, api_url: str, output: Path) -> dict:
         },
         "cases": details,
     }
-    output.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    await AsyncPath(output).write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(json.dumps(report["summary"], indent=2))
     return report
 

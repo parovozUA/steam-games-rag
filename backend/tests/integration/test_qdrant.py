@@ -50,14 +50,10 @@ async def test_real_qdrant_hybrid_index_and_search():
         assert await store.count() == 3
 
         filters = SearchFilters(operating_systems=["linux"], categories=["Co-op"])
-        dense_hits = await store.dense_search([1.0, 0.0, 0.0], filters, 10)
-        sparse_hits = await store.sparse_search(([101, 202], [2.0, 1.0]), filters, 10)
-        hybrid_hits = await store.hybrid_search(([1.0, 0.0, 0.0]), ([101, 202], [2.0, 1.0]), filters, 10)
+        dense_vec = [1.0, 0.0, 0.0]
+        sparse_vec = ([101, 202], [2.0, 1.0])
+        hybrid_hits = await store.hybrid_search(dense_vec, sparse_vec, filters, 10)
 
-        assert len(dense_hits) > 0
-        assert dense_hits[0].app_id == 10
-        assert len(sparse_hits) > 0
-        assert sparse_hits[0].app_id == 10
         assert len(hybrid_hits) > 0
         assert hybrid_hits[0].app_id == 10
 

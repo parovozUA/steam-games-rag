@@ -42,7 +42,9 @@ class LocalEmbeddingProvider:
 
     async def sparse_documents(self, texts: Sequence[str]) -> list[tuple[list[int], list[float]]]:
         await self._ensure_loaded()
-        values = await asyncio.to_thread(lambda: list(self._sparse.embed(list(texts), batch_size=self.batch_size)))
+        values = await asyncio.to_thread(
+            lambda: list(self._sparse.embed(list(texts), batch_size=self.batch_size))
+        )
         return [(item.indices.tolist(), item.values.tolist()) for item in values]
 
     async def sparse_query(self, text: str) -> tuple[list[int], list[float]]:

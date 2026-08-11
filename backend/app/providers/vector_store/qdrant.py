@@ -158,7 +158,9 @@ class QdrantVectorStore:
                 filter=qdrant_filter,
             ),
             models.Prefetch(
-                query=models.SparseVector(indices=list(sparse_vector[0]), values=list(sparse_vector[1])),
+                query=models.SparseVector(
+                    indices=list(sparse_vector[0]), values=list(sparse_vector[1])
+                ),
                 using="bm25",
                 limit=limit,
                 filter=qdrant_filter,

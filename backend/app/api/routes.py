@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Request, Response, status
+from fastapi import APIRouter, Request, Response
 from fastapi.responses import StreamingResponse
 
 from app.schemas.api import SearchRequest

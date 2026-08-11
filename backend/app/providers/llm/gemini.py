@@ -61,7 +61,9 @@ class GeminiAdapter:
             raise ProviderFailure("Gemini timed out", FailureCategory.TIMEOUT, True) from exc
         except APIError as exc:
             category, retryable = classify_gemini_status(exc.code)
-            raise ProviderFailure(f"Gemini request failed: {exc.message}", category, retryable) from exc
+            raise ProviderFailure(
+                f"Gemini request failed: {exc.message}", category, retryable
+            ) from exc
 
     async def stream_chat(
         self, *, system: str, user: str, timeout_seconds: float
@@ -83,4 +85,6 @@ class GeminiAdapter:
             raise ProviderFailure("Gemini timed out", FailureCategory.TIMEOUT, True) from exc
         except APIError as exc:
             category, retryable = classify_gemini_status(exc.code)
-            raise ProviderFailure(f"Gemini request failed: {exc.message}", category, retryable) from exc
+            raise ProviderFailure(
+                f"Gemini request failed: {exc.message}", category, retryable
+            ) from exc
