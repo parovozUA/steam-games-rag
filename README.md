@@ -11,11 +11,11 @@
     <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
   </p>
 
-  <h2>
+  <p>
     <a href="https://steam.constantine.software/">
-      <kbd> <br> 🔴 TRY THE LIVE DEMO 🔴 <br> </kbd>
+      <kbd> <br> <big><big><strong>🔴 TRY THE LIVE DEMO 🔴</strong></big></big> <br> </kbd>
     </a>
-  </h2>
+  </p>
 </div>
 
 ---
