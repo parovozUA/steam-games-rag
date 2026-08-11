@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🎮 Steam Games Agentic RAG</h1>
+  <h1>🎮 Steam Games RAG</h1>
   <p><strong>A Production-Ready, Multilingual Hybrid Search & RAG System for Game Discovery</strong></p>
   
   <p>
@@ -10,6 +10,12 @@
     <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
     <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
   </p>
+
+  <h2>
+    <a href="https://steam.constantine.software/">
+      <kbd> <br> 🔴 TRY THE LIVE DEMO 🔴 <br> </kbd>
+    </a>
+  </h2>
 </div>
 
 ---
