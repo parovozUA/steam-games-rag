@@ -35,10 +35,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             settings.dense_vector_size,
         )
         vector_store = QdrantVectorStore(settings.qdrant_url, settings.qdrant_collection)
-        
+
         if not settings.gemini_api_key:
             raise RuntimeError("GEMINI_API_KEY environment variable is required")
-            
+
         gemini = GeminiAdapter(settings.gemini_api_key, settings.gemini_model, settings.gemini_rpm)
         catalog = CanonicalCatalog.load(settings.canonical_catalog_path)
         app.state.pipeline = SearchPipeline(

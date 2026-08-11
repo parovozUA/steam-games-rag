@@ -80,7 +80,7 @@ class SearchPipeline:
         timings["retrieval_ms"] = round((time.monotonic() - stage_started) * 1000, 2)
 
         results = [self._game_result(hit) for hit in hits]
-        
+
         debug = None
         if request.debug:
             debug = {
@@ -110,7 +110,7 @@ class SearchPipeline:
                 candidates_json=json.dumps(candidate_payload, ensure_ascii=False),
                 result_limit=self.settings.result_limit,
             )
-            
+
             async for chunk in self.gemini.stream_chat(
                 system=rerank_prompt.system,
                 user=rerank_prompt.user,

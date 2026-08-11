@@ -63,4 +63,3 @@ async def test_real_qdrant_hybrid_index_and_search():
         if collection_created:
             await store.clear()
         await store.close()
-

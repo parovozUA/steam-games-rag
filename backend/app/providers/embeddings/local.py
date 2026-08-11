@@ -23,12 +23,8 @@ class LocalEmbeddingProvider:
             if self._dense is None:
                 from fastembed import SparseTextEmbedding, TextEmbedding
 
-                self._dense = await asyncio.to_thread(
-                    TextEmbedding, self.dense_model_name
-                )
-                self._sparse = await asyncio.to_thread(
-                    SparseTextEmbedding, self.sparse_model_name
-                )
+                self._dense = await asyncio.to_thread(TextEmbedding, self.dense_model_name)
+                self._sparse = await asyncio.to_thread(SparseTextEmbedding, self.sparse_model_name)
 
     async def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
         await self._ensure_loaded()

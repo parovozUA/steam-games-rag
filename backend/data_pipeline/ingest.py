@@ -31,9 +31,9 @@ async def main():
         settings.dense_vector_size,
     )
     vector_store = QdrantVectorStore(settings.qdrant_url, settings.qdrant_collection)
-    
+
     await vector_store.wait_until_ready(10.0)
-    
+
     force = "--force" in sys.argv
     try:
         count = await vector_store.count()
@@ -60,7 +60,7 @@ async def main():
         logger.warning(f"Row {line_number} skipped: {reason}")
 
     iterator = stream_games(csv_path, settings.retrieval_text_max_chars, on_failure=record_failure)
-    
+
     while True:
         batch = await asyncio.to_thread(lambda: list(itertools.islice(iterator, batch_size)))
         if not batch:
@@ -80,6 +80,7 @@ async def main():
     catalog.save(catalog_path)
     logger.info(f"Finished indexing {processed} games. Catalog saved.")
     await vector_store.close()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
