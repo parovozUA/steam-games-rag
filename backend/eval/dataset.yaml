@@ -1,22 +1,826 @@
 cases:
-  - id: en_space_coop
-    query: cooperative space survival game for Linux
-    relevant_app_ids: [10]
-    filters: {operating_systems: [linux], categories: [Co-op], tags: [Space, Survival]}
-  - id: uk_space
-    query: кооперативна космічна гра для Linux з рейтингом від 80%
-    relevant_app_ids: [10]
-    filters: {operating_systems: [linux], minimum_rating_percent: 80}
-  - id: de_strategy
-    query: taktisches Strategiespiel für macOS
-    relevant_app_ids: [30]
-    filters: {operating_systems: [mac], genres: [Strategy]}
-  - id: es_farming
-    query: juego relajante de granja para Windows
-    relevant_app_ids: [20]
-    filters: {operating_systems: [windows], tags: [Farming, Relaxing]}
-  - id: pl_ukrainian
-    query: gry z obsługą języka ukraińskiego
-    relevant_app_ids: [10]
-    filters: {supported_languages: [Ukrainian]}
-
+- id: zh_stardew_valley_mac_coop
+  query: 适合Mac玩的像素风多人联机农场模拟游戏
+  relevant_app_ids:
+  - 413150
+  filters:
+    operating_systems:
+    - mac
+    tags:
+    - Farming Sim
+    - Pixel Graphics
+    - Multiplayer
+    supported_languages:
+    - Simplified Chinese
+- id: helltaker_puzzle_demons
+  query: free to play anime puzzle game with demons
+  relevant_app_ids:
+  - 1289310
+  filters:
+    operating_systems:
+    - windows
+    - mac
+    - linux
+    genres:
+    - Adventure
+    - Free to Play
+    - Indie
+    tags:
+    - Puzzle
+    - Anime
+    - Demons
+    - Free to Play
+    supported_languages:
+    - English
+- id: ru_fall_guys_free_battle_royale
+  query: веселая бесплатная королевская битва с препятствиями на пк
+  relevant_app_ids:
+  - 1097150
+  filters:
+    operating_systems:
+    - windows
+    tags:
+    - Battle Royale
+    - Party Game
+    - Multiplayer
+- id: fr_l4d2_coop_zombie_linux
+  query: jeu de tir de zombies en coopération multijoueur sur linux
+  relevant_app_ids:
+  - 550
+  filters:
+    operating_systems:
+    - linux
+    genres:
+    - Action
+    tags:
+    - Zombies
+    - Co-op
+    - Multiplayer
+    - FPS
+- id: uk_slime_rancher_linux
+  query: милий симулятор з відкритим світом та дослідженням для linux
+  relevant_app_ids:
+  - 433340
+  filters:
+    operating_systems:
+    - linux
+    genres:
+    - Simulation
+    tags:
+    - Cute
+    - Open World
+    - Exploration
+- id: en_black_mesa_linux
+  query: atmospheric sci-fi fps remake for linux under 10 dollars
+  relevant_app_ids:
+  - 362890
+  filters:
+    operating_systems:
+    - linux
+    tags:
+    - FPS
+    - Remake
+    - Sci-fi
+    - Atmospheric
+    maximum_price: 10.0
+- id: fr_mount_blade_warband
+  query: jeu action rpg médiéval sandbox pour linux et mac en français
+  relevant_app_ids:
+  - 48700
+  filters:
+    operating_systems:
+    - linux
+    - mac
+    genres:
+    - Action
+    - RPG
+    tags:
+    - Medieval
+    - Sandbox
+    supported_languages:
+    - French
+- id: lost_ark_search
+  query: free to play isometric hack and slash mmorpg
+  relevant_app_ids:
+  - 1599340
+  filters:
+    operating_systems:
+    - windows
+    genres:
+    - Massively Multiplayer
+    - RPG
+    - Free To Play
+    tags:
+    - MMORPG
+    - Isometric
+    - Hack and Slash
+    - Free to Play
+- id: ua_the_long_dark_linux
+  query: атмосферний симулятор виживання на витривалість для Linux українською
+  relevant_app_ids:
+  - 305620
+  filters:
+    operating_systems:
+    - linux
+    tags:
+    - Survival
+    - Atmospheric
+    supported_languages:
+    - Ukrainian
+- id: de_ark_survival_mac
+  query: Open-World-Survival-Spiel mit Dinosauriern und Multiplayer für Mac
+  relevant_app_ids:
+  - 346110
+  filters:
+    operating_systems:
+    - mac
+    tags:
+    - Survival
+    - Dinosaurs
+    - Open World
+    - Multiplayer
+    supported_languages:
+    - German
+- id: zh_ultrakill_search
+  query: 超高难度复古风快节奏FPS单人射击游戏
+  relevant_app_ids:
+  - 1229490
+  filters:
+    operating_systems:
+    - windows
+    genres:
+    - Action
+    - Indie
+    tags:
+    - FPS
+    - Retro
+    - Fast-Paced
+    - Difficult
+    - Singleplayer
+    supported_languages:
+    - English
+- id: ru_disco_elysium_mac_rpg
+  query: изометрическая детективная рпг с глубоким сюжетом на mac
+  relevant_app_ids:
+  - 632470
+  filters:
+    operating_systems:
+    - mac
+    genres:
+    - RPG
+    tags:
+    - Detective
+    - Isometric
+    - Story Rich
+    supported_languages:
+    - Russian
+- id: uk_nier_automata
+  query: постапокаліптична JRPG з чудовим саундтреком та жіночим персонажем
+  relevant_app_ids:
+  - 524220
+  filters:
+    operating_systems:
+    - windows
+    genres:
+    - Action
+    - RPG
+    tags:
+    - Post-apocalyptic
+    - JRPG
+    - Great Soundtrack
+    - Female Protagonist
+    maximum_price: 20.0
+- id: zh_metro_2033_redux
+  query: 支持 Linux 的末日废土风单人第一人称恐怖射击游戏
+  relevant_app_ids:
+  - 286690
+  filters:
+    operating_systems:
+    - linux
+    genres:
+    - Action
+    tags:
+    - Post-apocalyptic
+    - FPS
+    - Singleplayer
+    - Horror
+    supported_languages:
+    - English
+- id: de_survival_crafting_linux
+  query: schweres 2D Survival-Spiel mit Crafting für Linux
+  relevant_app_ids:
+  - 219740
+  filters:
+    operating_systems:
+    - linux
+    categories:
+    - Single-player
+    genres:
+    - Adventure
+    - Indie
+    tags:
+    - Survival
+    - Crafting
+    - 2D
+    - Singleplayer
+- id: uk_funny_coop_physics_mac
+  query: весела кооперативна головоломка з фізикою для mac
+  relevant_app_ids:
+  - 477160
+  filters:
+    operating_systems:
+    - mac
+    tags:
+    - Co-op
+    - Physics
+    - Puzzle
+    - Funny
+    supported_languages:
+    - Ukrainian
+- id: es_space_engineers_sandbox
+  query: juego de supervivencia sandbox en el espacio con construcción y físicas para
+    Windows
+  relevant_app_ids:
+  - 244850
+  filters:
+    operating_systems:
+    - windows
+    tags:
+    - Space
+    - Sandbox
+    - Building
+    - Physics
+    - Survival
+    supported_languages:
+    - Spanish - Spain
+    maximum_price: 10.0
+- id: ru_dota2_search
+  query: бесплатная моба игра на линукс на русском
+  relevant_app_ids:
+  - 570
+  filters:
+    operating_systems:
+    - linux
+    tags:
+    - MOBA
+    - Free to Play
+    supported_languages:
+    - russian
+- id: en_starbound_mac_coop
+  query: 2D space sandbox survival game with co-op for Mac
+  relevant_app_ids:
+  - 211820
+  filters:
+    operating_systems:
+    - mac
+    tags:
+    - 2D
+    - Space
+    - Sandbox
+    - Survival
+    - Co-op
+    supported_languages:
+    - English
+- id: en_spiderman_remastered_open_world
+  query: single-player open world superhero game with parkour action
+  relevant_app_ids:
+  - 1817070
+  filters:
+    operating_systems:
+    - windows
+    categories:
+    - Single-player
+    genres:
+    - Action
+    - Adventure
+    tags:
+    - Open World
+    - Superhero
+    - Singleplayer
+    - Parkour
+    - Action
+    supported_languages:
+    - English
+- id: ru_vermintide_2
+  query: кооперативный экшен от первого лица в стиле темного фэнтези
+  relevant_app_ids:
+  - 552500
+  filters:
+    operating_systems:
+    - windows
+    categories:
+    - Co-op
+    - Online Co-op
+    genres:
+    - Action
+    - RPG
+    tags:
+    - First-Person
+    - Dark Fantasy
+    supported_languages:
+    - Russian
+- id: es_rainbow_six_tactical_fps
+  query: shooter tactico multijugador gratuito fps competitivo para Windows
+  relevant_app_ids:
+  - 488824
+  filters:
+    operating_systems:
+    - windows
+    genres:
+    - Action
+    - Free To Play
+    tags:
+    - FPS
+    - Multiplayer
+    - Tactical
+    - Shooter
+    supported_languages:
+    - Spanish - Spain
+- id: zh_content_warning_funny_horror
+  query: 第一人称多人联机搞笑恐怖游戏
+  relevant_app_ids:
+  - 2881650
+  filters:
+    operating_systems:
+    - windows
+    genres:
+    - Action
+    - Adventure
+    - Indie
+    tags:
+    - Online Co-Op
+    - Horror
+    - Funny
+    - First-Person
+    - Multiplayer
+    supported_languages:
+    - Simplified Chinese
+- id: de_tomb_raider_linux
+  query: Action-Adventure mit weiblicher Hauptfigur und Rätseln für Linux
+  relevant_app_ids:
+  - 391220
+  filters:
+    operating_systems:
+    - linux
+    genres:
+    - Action
+    - Adventure
+    tags:
+    - Female Protagonist
+    - Puzzle
+    supported_languages:
+    - German
+- id: warframe_search
+  query: free to play sci-fi looter shooter with space ninjas for windows
+  relevant_app_ids:
+  - 230410
+  filters:
+    operating_systems:
+    - windows
+    genres:
+    - Action
+    - RPG
+    - Free To Play
+    tags:
+    - Free to Play
+    - Looter Shooter
+    - Sci-fi
+    - Ninja
+    - Shooter
+    supported_languages:
+    - English
+- id: zh_re4_survival_horror
+  query: 适合Windows系统的写实单人动作冒险生存恐怖游戏，支持手柄且有中文
+  relevant_app_ids:
+  - 2050650
+  filters:
+    operating_systems:
+    - windows
+    categories:
+    - Single-player
+    - Full controller support
+    genres:
+    - Action
+    - Adventure
+    tags:
+    - Survival Horror
+    - Realistic
+    - Horror
+    supported_languages:
+    - Simplified Chinese
+    maximum_price: 20.0
+- id: es_dead_cells_linux
+  query: juegos roguelite pixel art difíciles para linux
+  relevant_app_ids:
+  - 588650
+  filters:
+    operating_systems:
+    - linux
+    tags:
+    - Rogue-lite
+    - Pixel Graphics
+    - Difficult
+    supported_languages:
+    - Spanish - Spain
+    - Spanish - Latin America
+- id: zh_portal_linux_physics_puzzle
+  query: 支持 Linux 的第一人称 3D 物理科幻解谜游戏
+  relevant_app_ids:
+  - 400
+  filters:
+    operating_systems:
+    - linux
+    categories:
+    - Single-player
+    genres:
+    - Action
+    tags:
+    - Puzzle
+    - First-Person
+    - Physics
+    - Sci-fi
+    - 3D Platformer
+    supported_languages:
+    - Simplified Chinese
+- id: z1_battle_royale_search
+  query: free to play battle royale shooter for pc
+  relevant_app_ids:
+  - 433850
+  filters:
+    operating_systems:
+    - windows
+    genres:
+    - Free To Play
+    - Action
+    tags:
+    - Battle Royale
+    - Multiplayer
+    - PvP
+    - Shooter
+- id: fr_frostpunk_mac_survival
+  query: jeu de gestion et de survie steampunk post-apocalyptique sur mac
+  relevant_app_ids:
+  - 323190
+  filters:
+    operating_systems:
+    - mac
+    genres:
+    - Simulation
+    - Strategy
+    tags:
+    - Steampunk
+    - Survival
+    - City Builder
+    - Post-apocalyptic
+    supported_languages:
+    - French
+- id: de_skyrim_se
+  query: Open World Fantasy Rollenspiel mit Drachen für Windows unter 10€
+  relevant_app_ids:
+  - 489830
+  filters:
+    operating_systems:
+    - windows
+    genres:
+    - RPG
+    tags:
+    - Open World
+    - Fantasy
+    - Dragons
+    supported_languages:
+    - German
+    maximum_price: 10.0
+- id: fr_helldivers_2_query
+  query: jeu de tir à la troisième personne en coop PvE de science-fiction
+  relevant_app_ids:
+  - 553850
+  filters:
+    operating_systems:
+    - windows
+    categories:
+    - Online Co-op
+    genres:
+    - Action
+    tags:
+    - Third-Person Shooter
+    - PvE
+    - Sci-fi
+    - Co-op
+    supported_languages:
+    - French
+- id: ru_castle_crashers_mac
+  query: веселый 2D слэшер битэмап с кооперативом на mac
+  relevant_app_ids:
+  - 204360
+  filters:
+    operating_systems:
+    - mac
+    tags:
+    - 2D
+    - Beat 'em up
+    - Co-op
+    - Funny
+    supported_languages:
+    - Russian
+- id: zh_resident_evil_village
+  query: 好玩的单人第一人称生存恐怖射击游戏，支持中文
+  relevant_app_ids:
+  - 1196590
+  filters:
+    operating_systems:
+    - windows
+    categories:
+    - Single-player
+    genres:
+    - Action
+    tags:
+    - Survival Horror
+    - First-Person
+    - Horror
+    - FPS
+    supported_languages:
+    - Simplified Chinese
+    - Traditional Chinese
+- id: de_truck_simulator_linux
+  query: realistischer lkw fahr simulator open world für linux
+  relevant_app_ids:
+  - 227300
+  filters:
+    operating_systems:
+    - linux
+    genres:
+    - Simulation
+    tags:
+    - Driving
+    - Open World
+    - Realistic
+    supported_languages:
+    - German
+- id: es_insurgency_sandstorm
+  query: shooter táctico militar realista cooperativo online para Windows
+  relevant_app_ids:
+  - 581320
+  filters:
+    operating_systems:
+    - windows
+    genres:
+    - Action
+    tags:
+    - Tactical
+    - Realistic
+    - FPS
+    - Military
+    - Co-op
+    supported_languages:
+    - Spanish - Spain
+    - Spanish - Latin America
+    maximum_price: 10.0
+- id: de_just_cause_3_destruction
+  query: Open-World-Actionspiel mit Fokus auf Zerstörung und Sandbox-Physik für Windows
+  relevant_app_ids:
+  - 225540
+  filters:
+    operating_systems:
+    - windows
+    categories:
+    - Single-player
+    genres:
+    - Action
+    - Adventure
+    tags:
+    - Open World
+    - Destruction
+    - Sandbox
+    - Physics
+    supported_languages:
+    - german
+- id: de_v_rising_search
+  query: Vampir-Überlebensspiel mit Base-Building und Online-Koop für PC
+  relevant_app_ids:
+  - 1604030
+  filters:
+    operating_systems:
+    - windows
+    tags:
+    - Vampire
+    - Survival
+    - Base-Building
+    - Online Co-Op
+    supported_languages:
+    - German
+- id: es_battlefield_v_ww2
+  query: shooter de la segunda guerra mundial en primera persona multijugador para
+    windows
+  relevant_app_ids:
+  - 1238810
+  filters:
+    operating_systems:
+    - windows
+    genres:
+    - Action
+    tags:
+    - FPS
+    - World War II
+    - Multiplayer
+    - First-Person
+- id: ru_project_zomboid_survival
+  query: кооперативный симулятор выживания в зомби апокалипсисе с крафтом на русском
+  relevant_app_ids:
+  - 108600
+  filters:
+    categories:
+    - Co-op
+    - Multi-player
+    genres:
+    - Simulation
+    - RPG
+    - Indie
+    tags:
+    - Survival
+    - Zombies
+    - Crafting
+    - Post-apocalyptic
+    - Open World
+    supported_languages:
+    - Russian
+    maximum_price: 15.0
+- id: de_survival_horror_forest
+  query: Co-op Open-World-Survival-Spiel mit Horror-Elementen für Windows
+  relevant_app_ids:
+  - 242760
+  filters:
+    operating_systems:
+    - windows
+    categories:
+    - Co-op
+    - Online Co-op
+    genres:
+    - Action
+    - Adventure
+    tags:
+    - Survival
+    - Open World
+    - Survival Horror
+    - Crafting
+    supported_languages:
+    - German
+- id: ru_monster_hunter_world
+  query: кооперативный экшен рпг с открытым миром и охотой на монстров
+  relevant_app_ids:
+  - 582010
+  filters:
+    operating_systems:
+    - windows
+    categories:
+    - Co-op
+    - Multi-player
+    genres:
+    - Action
+    tags:
+    - Co-op
+    - Open World
+    - RPG
+    - Action RPG
+    supported_languages:
+    - Russian
+- id: ru_beamng_drive_simulation
+  query: симулятор вождения с реалистичной физикой разрушения машин на ПК
+  relevant_app_ids:
+  - 284160
+  filters:
+    operating_systems:
+    - windows
+    genres:
+    - Simulation
+    - Racing
+    tags:
+    - Driving
+    - Physics
+    - Destruction
+    - Realistic
+    supported_languages:
+    - Russian
+    maximum_price: 20.0
+- id: ru_souls_like_dark_fantasy
+  query: сложная рпг в стиле темного фэнтези на винду
+  relevant_app_ids:
+  - 374320
+  filters:
+    operating_systems:
+    - windows
+    genres:
+    - Action
+    tags:
+    - Souls-like
+    - Dark Fantasy
+    - Difficult
+    - RPG
+- id: tale_of_immortal_query
+  query: sandbox action RPG about Chinese mythology and cultivation
+  relevant_app_ids:
+  - 1468810
+  filters:
+    operating_systems:
+    - windows
+    categories:
+    - Single-player
+    genres:
+    - RPG
+    - Action
+    tags:
+    - Mythology
+    - Sandbox
+    - Action RPG
+    supported_languages:
+    - English
+    - Simplified Chinese
+    maximum_price: 20.0
+- id: uk_historical_grand_strategy_mac_linux
+  query: 'гвардійстратегісти, га ге ге... гаразд: гаразд, гегегабайт! гегегабайт...'
+  relevant_app_ids:
+  - 236850
+  filters:
+    operating_systems:
+    - mac
+    - linux
+    genres:
+    - Simulation
+    - Strategy
+    tags:
+    - Grand Strategy
+    - Historical
+    - Diplomacy
+- id: ru_resident_evil_2
+  query: атмосферный зомби хоррор ремейк от третьего лица
+  relevant_app_ids:
+  - 883710
+  filters:
+    operating_systems:
+    - windows
+    categories:
+    - Single-player
+    genres:
+    - Action
+    tags:
+    - Zombies
+    - Survival Horror
+    - Remake
+    - Third Person
+    - Singleplayer
+    supported_languages:
+    - Russian
+- id: es_coop_split_screen_adventure
+  query: juego de aventuras cooperativo para dos personas en pantalla dividida
+  relevant_app_ids:
+  - 1426210
+  filters:
+    operating_systems:
+    - windows
+    categories:
+    - Multi-player
+    - Co-op
+    - Shared/Split Screen Co-op
+    genres:
+    - Action
+    - Adventure
+    tags:
+    - Co-op
+    - Split Screen
+    - Puzzle-Platformer
+    - 3D Platformer
+    supported_languages:
+    - Spanish - Spain
+    maximum_price: 10.0
+- id: uk_inscryption_dark_card_roguelike
+  query: похмурий картковий рогалик з елементами горору та побудовою колоди
+  relevant_app_ids:
+  - 1092790
+  filters:
+    operating_systems:
+    - windows
+    - mac
+    - linux
+    genres:
+    - Strategy
+    - Indie
+    - Adventure
+    tags:
+    - Card Battler
+    - Deckbuilding
+    - Horror
+    - Rogue-like
+    maximum_price: 10.0
+- id: ru_fallout4_postapoc_rpg
+  query: постапокалиптическая рпг с открытым миром на русском
+  relevant_app_ids:
+  - 377160
+  filters:
+    operating_systems:
+    - windows
+    genres:
+    - RPG
+    tags:
+    - Post-apocalyptic
+    - Open World
+    supported_languages:
+    - Russian

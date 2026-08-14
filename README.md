@@ -29,6 +29,17 @@
 * **Low-Latency Streaming:** Implements Server-Sent Events (SSE) to stream LLM-grounded answers directly to the React UI, masking generation time and providing a snappy "ChatGPT-like" typing experience.
 * **Rigorous IR Evaluation:** The system isn't just built; it's *measured*. Features a custom evaluation suite computing Recall, MRR, nDCG, and Filter Extraction F1 across a multilingual ground-truth dataset.
 
+  ```text
+  Evaluation — 50 multilingual queries
+
+  Recall@10       0.32
+  MRR@10          0.16
+  nDCG@10         0.20
+  Filter F1       0.33
+  Latency p50     4.3 s
+  Latency p95     5.8 s
+  ```
+
 ## 🧠 System Architecture
 
 The architecture intentionally separates heavy data engineering (ETL/embedding) from the lightweight, highly concurrent FastAPI serving layer.

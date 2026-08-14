@@ -35,22 +35,22 @@ async def main():
     await vector_store.wait_until_ready(10.0)
 
     force = "--force" in sys.argv
+    count = 0
     try:
         count = await vector_store.count()
         if count > 0 and not force:
-            logger.info(f"Index already contains {count} games. Skipping ingestion.")
-            logger.info(
-                "If you want to reindex, run with --force flag: "
-                "python -m data_pipeline.ingest --force"
-            )
-            await vector_store.close()
-            return
+            logger.info(f"Index already contains {count} games. Resuming from there.")
+        else:
+            logger.info("Clearing vector store and ensuring collection exists...")
+            await vector_store.clear()
+            count = 0
     except Exception:
-        pass
+        logger.info("Clearing vector store and ensuring collection exists...")
+        await vector_store.clear()
+        count = 0
 
-    logger.info("Clearing vector store and ensuring collection exists...")
-    await vector_store.clear()
-    await vector_store.ensure_collection(embeddings.dense_size)
+    if count == 0:
+        await vector_store.ensure_collection(embeddings.dense_size)
 
     builder = CatalogBuilder()
     processed = 0
@@ -60,6 +60,10 @@ async def main():
         logger.warning(f"Row {line_number} skipped: {reason}")
 
     iterator = stream_games(csv_path, settings.retrieval_text_max_chars, on_failure=record_failure)
+    
+    if count > 0:
+        logger.info(f"Fast-forwarding iterator by {count} games. This may take a moment...")
+        next(itertools.islice(iterator, count, count), None)
 
     while True:
         batch = await asyncio.to_thread(lambda: list(itertools.islice(iterator, batch_size)))

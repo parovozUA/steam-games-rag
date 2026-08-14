@@ -22,7 +22,6 @@ class Settings(BaseSettings):
     steam_csv_path: Path = Path("data/steam_games.csv")
     prompt_registry_path: Path = Path("../prompts/registry.yaml")
     canonical_catalog_path: Path = Path("data/canonical_values.json")
-    index_state_path: Path = Path("data/indexing_state.json")
 
     dense_embedding_model: str = "intfloat/multilingual-e5-large"
     sparse_embedding_model: str = "Qdrant/bm25"
@@ -34,7 +33,6 @@ class Settings(BaseSettings):
     result_limit: int = Field(10, ge=1, le=50)
     search_soft_deadline_seconds: float = Field(10, gt=0)
     search_hard_deadline_seconds: float = Field(15, gt=0)
-    qdrant_startup_timeout_seconds: float = Field(60, gt=0)
 
     @model_validator(mode="after")
     def validate_related_values(self) -> "Settings":

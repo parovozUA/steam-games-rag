@@ -55,11 +55,19 @@ async def evaluate(dataset: Path, api_url: str, output: Path) -> dict:
     async with httpx.AsyncClient(timeout=20) as client:
         for case in cases:
             started = time.monotonic()
-            response = await client.post(
-                f"{api_url.rstrip('/')}/api/v1/search", json={"query": case["query"], "debug": True}
-            )
-            response.raise_for_status()
-            body = response.json()
+            body = None
+            lines = []
+            async with client.stream("POST", f"{api_url.rstrip('/')}/api/v1/search", json={"query": case["query"], "debug": True}) as response:
+                response.raise_for_status()
+                async for line in response.aiter_lines():
+                    lines.append(line)
+                    if line.startswith("data:") and '"results"' in line:
+                        data_str = line.split(":", 1)[1].strip()
+                        body = json.loads(data_str)
+                        break
+            if not body:
+                print("Stream output:", lines)
+                raise ValueError(f"No results found in stream for case {case['id']}")
             latency = (time.monotonic() - started) * 1000
             recall, mrr, ndcg = ranking_metrics(
                 case["relevant_app_ids"], [item["app_id"] for item in body["results"]]
