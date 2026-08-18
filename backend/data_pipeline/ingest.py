@@ -60,7 +60,7 @@ async def main():
         logger.warning(f"Row {line_number} skipped: {reason}")
 
     iterator = stream_games(csv_path, settings.retrieval_text_max_chars, on_failure=record_failure)
-    
+
     if count > 0:
         logger.info(f"Fast-forwarding iterator by {count} games. This may take a moment...")
         next(itertools.islice(iterator, count, count), None)

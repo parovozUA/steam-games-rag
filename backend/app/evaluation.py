@@ -57,7 +57,11 @@ async def evaluate(dataset: Path, api_url: str, output: Path) -> dict:
             started = time.monotonic()
             body = None
             lines = []
-            async with client.stream("POST", f"{api_url.rstrip('/')}/api/v1/search", json={"query": case["query"], "debug": True}) as response:
+            async with client.stream(
+                "POST",
+                f"{api_url.rstrip('/')}/api/v1/search",
+                json={"query": case["query"], "debug": True},
+            ) as response:
                 response.raise_for_status()
                 async for line in response.aiter_lines():
                     lines.append(line)
