@@ -1,0 +1,13 @@
+{
+  "name": "steam-games-rag-security-eval",
+  "private": true,
+  "version": "0.1.0",
+  "type": "commonjs",
+  "scripts": {
+    "eval": "promptfoo eval",
+    "eval:view": "promptfoo view"
+  },
+  "devDependencies": {
+    "promptfoo": "0.122.0"
+  }
+}

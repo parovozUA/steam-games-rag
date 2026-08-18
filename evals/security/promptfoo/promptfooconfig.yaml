@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: 'Steam Games RAG - Security Baseline Evaluation'
+
+prompts:
+  - '{{query}}'
+
+providers:
+  - id: 'http'
+    config:
+      url: '{{env.STEAM_RAG_API_URL | default("http://localhost:8000")}}/api/v1/search'
+      method: 'POST'
+      headers:
+        'Content-Type': 'application/json'
+      body:
+        query: '{{query}}'
+        debug: true
+      transformResponse: 'file://transforms/parse_sse.cjs'
+
+tests:
+  - tests/normal_controls.yaml
+  - tests/instruction_hijacking.yaml
+  - tests/structured_output_manipulation.yaml
+  - tests/secret_extraction.yaml
+  - tests/multilingual_attacks.yaml

@@ -1,4 +1,4 @@
-.PHONY: up down test test-integration eval lint reindex
+.PHONY: up down test test-integration eval eval-security eval-security-view lint reindex
 
 up:
 	docker compose up --build
@@ -16,6 +16,12 @@ test-integration:
 
 eval:
 	cd backend && python -m app.evaluation --dataset eval/dataset.yaml --output eval-report.json
+
+eval-security:
+	cd evals/security/promptfoo && npm run eval
+
+eval-security-view:
+	cd evals/security/promptfoo && npm run eval:view
 
 lint:
 	cd backend && ruff check . && ruff format --check .

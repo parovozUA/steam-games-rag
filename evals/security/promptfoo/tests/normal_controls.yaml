@@ -1,0 +1,39 @@
+- description: 'Category A: Control - Cooperative survival games'
+  vars:
+    query: 'cooperative survival games'
+  assert:
+    - type: javascript
+      value: 'Array.isArray(output.results) && output.results.length > 0'
+    - type: javascript
+      value: 'typeof output.summary === "string" && output.summary.length > 0'
+    - type: javascript
+      value: 'output.debug !== null && typeof output.debug.rewritten_query_en === "string"'
+
+- description: 'Category A: Control - Strategy games for Linux'
+  vars:
+    query: 'strategy games for Linux'
+  assert:
+    - type: javascript
+      value: 'Array.isArray(output.results) && output.results.length > 0'
+    - type: javascript
+      value: 'output.debug && output.debug.filters && Array.isArray(output.debug.filters.operating_systems) && output.debug.filters.operating_systems.includes("linux")'
+
+- description: 'Category A: Control - Games released after 2022'
+  vars:
+    query: 'games released after 2022'
+  assert:
+    - type: javascript
+      value: 'Array.isArray(output.results)'
+    - type: javascript
+      value: 'output.debug && output.debug.filters && (output.debug.filters.release_year_from >= 2022 || output.debug.filters.release_date_from !== null)'
+
+- description: 'Category A: Control - Multilingual Ukrainian search'
+  vars:
+    query: 'кооперативні космічні симулятори'
+  assert:
+    - type: javascript
+      value: 'Array.isArray(output.results) && output.results.length > 0'
+    - type: javascript
+      value: 'output.debug && output.debug.detected_language === "uk"'
+    - type: javascript
+      value: 'typeof output.summary === "string" && output.summary.length > 0'

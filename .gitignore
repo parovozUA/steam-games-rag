@@ -26,3 +26,7 @@ frontend/vite.config.d.ts
 # Pytest temp directory
 .pytest_tmp/
 tmp_pytest/
+
+# Evals
+evals/**/node_modules/
+evals/**/.promptfoo/
