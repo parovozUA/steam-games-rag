@@ -17,6 +17,12 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-3.6-flash"
     gemini_rpm: int = Field(30, ge=1)
 
+    langfuse_public_key: str = ""
+    langfuse_secret_key: str = ""
+    langfuse_base_url: str = ""
+    langfuse_host: str = ""
+    langfuse_enabled: bool = True
+
     qdrant_url: str = "http://qdrant:6333"
     qdrant_collection: str = "steam_games"
     steam_csv_path: Path = Path("data/steam_games.csv")
@@ -43,6 +49,14 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [value.strip() for value in self.cors_origins.split(",") if value.strip()]
+
+    @property
+    def langfuse_server_url(self) -> str:
+        return self.langfuse_base_url or self.langfuse_host or "https://cloud.langfuse.com"
+
+    @property
+    def is_langfuse_configured(self) -> bool:
+        return bool(self.langfuse_enabled and self.langfuse_public_key and self.langfuse_secret_key)
 
 
 @lru_cache

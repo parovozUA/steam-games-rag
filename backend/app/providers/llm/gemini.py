@@ -1,4 +1,5 @@
 import asyncio
+from collections.abc import Callable
 from typing import TypeVar
 
 from aiolimiter import AsyncLimiter
@@ -31,7 +32,13 @@ class GeminiAdapter:
         self.limiter = AsyncLimiter(rpm, 60)
 
     async def generate_structured(
-        self, *, system: str, user: str, response_model: type[T], timeout_seconds: float
+        self,
+        *,
+        system: str,
+        user: str,
+        response_model: type[T],
+        timeout_seconds: float,
+        on_usage: Callable[[dict[str, int]], None] | None = None,
     ) -> T:
         try:
             async with asyncio.timeout(timeout_seconds):
@@ -46,6 +53,14 @@ class GeminiAdapter:
                             temperature=0.1,
                         ),
                     )
+            if response.usage_metadata and on_usage:
+                on_usage(
+                    {
+                        "input": response.usage_metadata.prompt_token_count or 0,
+                        "output": response.usage_metadata.candidates_token_count or 0,
+                        "total": response.usage_metadata.total_token_count or 0,
+                    }
+                )
             if not response.text:
                 raise ProviderFailure(
                     "Gemini returned no output", FailureCategory.INVALID_OUTPUT, False
@@ -67,7 +82,14 @@ class GeminiAdapter:
                 f"Gemini request failed: {exc.message}", category, retryable
             ) from exc
 
-    async def stream_chat(self, *, system: str, user: str, timeout_seconds: float):
+    async def stream_chat(
+        self,
+        *,
+        system: str,
+        user: str,
+        timeout_seconds: float,
+        on_usage: Callable[[dict[str, int]], None] | None = None,
+    ):
         try:
             async with asyncio.timeout(timeout_seconds):
                 async with self.limiter:
@@ -79,6 +101,14 @@ class GeminiAdapter:
                         ),
                     )
                     async for chunk in stream:
+                        if chunk.usage_metadata and on_usage:
+                            on_usage(
+                                {
+                                    "input": chunk.usage_metadata.prompt_token_count or 0,
+                                    "output": chunk.usage_metadata.candidates_token_count or 0,
+                                    "total": chunk.usage_metadata.total_token_count or 0,
+                                }
+                            )
                         if chunk.text:
                             yield chunk.text
         except TimeoutError as exc:

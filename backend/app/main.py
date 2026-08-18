@@ -11,6 +11,7 @@ from app.api.routes import router
 from app.core.config import Settings, get_settings
 from app.core.errors import AppError, ErrorCode
 from app.observability.logging import configure_logging
+from app.observability.tracing import TracingService
 from app.prompts.loader import PromptLoader
 from app.providers.embeddings.local import LocalEmbeddingProvider
 from app.providers.llm.gemini import GeminiAdapter
@@ -35,6 +36,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             settings.dense_vector_size,
         )
         vector_store = QdrantVectorStore(settings.qdrant_url, settings.qdrant_collection)
+        tracer = TracingService(settings)
 
         if not settings.gemini_api_key:
             raise RuntimeError("GEMINI_API_KEY environment variable is required")
@@ -48,8 +50,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             prompts=prompts,
             gemini=gemini,
             catalog=lambda: catalog,
+            tracer=tracer,
         )
         yield
+        tracer.shutdown()
         await vector_store.close()
 
     app = FastAPI(
