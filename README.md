@@ -7,7 +7,10 @@
     <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
     <img src="https://img.shields.io/badge/Qdrant-D33833?style=for-the-badge&logo=qdrant&logoColor=white" alt="Qdrant" />
     <img src="https://img.shields.io/badge/Gemini-8E75B2?style=for-the-badge&logo=googlebard&logoColor=white" alt="Gemini" />
+    <img src="https://img.shields.io/badge/Langfuse-000000?style=for-the-badge&logo=langfuse&logoColor=white" alt="Langfuse" />
+    <img src="https://img.shields.io/badge/Promptfoo-6A0DAD?style=for-the-badge&logo=shield&logoColor=white" alt="Promptfoo" />
     <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+    <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
     <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
   </p>
 
@@ -20,14 +23,16 @@
 
 ---
 
-> **Overview**: This project is a flagship demonstration of advanced **AI Engineering** principles. It goes beyond basic Retrieval-Augmented Generation (RAG) by implementing **Agentic Query Understanding**, **Native Hybrid Search (Dense + Sparse with RRF)**, and **Streaming Generative Summaries**. Built for scale, it is rigorously evaluated against Information Retrieval (IR) metrics and fully containerized for deployment.
+> **Overview**: This project is a flagship demonstration of advanced **AI Engineering** principles. It goes beyond basic Retrieval-Augmented Generation (RAG) by implementing **Agentic Query Understanding**, **Native Hybrid Search (Dense + Sparse with RRF)**, **Production Observability & Tracing (Langfuse v4)**, **Automated Adversarial Security Testing (Promptfoo)**, and **Streaming Generative Summaries**. Built for scale, it is rigorously evaluated against Information Retrieval (IR) metrics and fully containerized for deployment.
 
 ## 🚀 Key AI Engineering Capabilities
 
-* **Agentic Query Routing & Understanding:** Uses an LLM to dynamically parse natural language into canonicalized structural filters (e.g., `"co-op space games for mac"` $\rightarrow$ `genres: [Co-op], os: [mac], query: space games`). Features automatic language detection and query rewriting.
-* **Native Qdrant Hybrid Search:** Utilizes Qdrant's highly optimized Reciprocal Rank Fusion (RRF) at the database layer. This fuses Dense embeddings (`intfloat/multilingual-e5-large`) and Sparse embeddings (`Qdrant/bm25`) without heavy Python-side memory overhead or data transfer bottlenecks.
-* **Low-Latency Streaming:** Implements Server-Sent Events (SSE) to stream LLM-grounded answers directly to the React UI, masking generation time and providing a snappy "ChatGPT-like" typing experience.
-* **Rigorous IR Evaluation:** The system isn't just built; it's *measured*. Features a custom evaluation suite computing Recall, MRR, nDCG, and Filter Extraction F1 across a multilingual ground-truth dataset.
+* **Agentic Query Routing & Understanding:** Uses an LLM with structured output to dynamically parse natural language queries into canonicalized structural filters (e.g., `"co-op space games for mac"` $\rightarrow$ `genres: [Co-op], os: [mac], query: space games`). Includes multilingual language detection and semantic query rewriting.
+* **Native Qdrant Hybrid Search:** Utilizes Qdrant's Reciprocal Rank Fusion (RRF) at the database engine layer, fusing Dense embeddings (`intfloat/multilingual-e5-large`) and Sparse BM25 embeddings (`Qdrant/bm25` via FastEmbed) without memory-heavy Python-side reranking bottlenecks.
+* **Production Observability & Tracing (Langfuse v4):** End-to-end distributed tracing across all pipeline stages (query understanding, dense/sparse embedding generation, vector retrieval, and LLM answer synthesis) with token accounting, latency metrics, and fail-open resilience.
+* **Automated Security & Adversarial Evaluation (Promptfoo):** Dedicated regression suite testing against 5 attack categories: direct instruction hijacking/jailbreaks, structured output manipulation, secret/system prompt extraction, and multilingual attack vectors.
+* **Low-Latency Streaming:** Implements Server-Sent Events (SSE) to stream LLM-grounded answers and game recommendation cards directly to the React frontend in real time.
+* **Rigorous IR Evaluation:** Evaluated on a 50-query multilingual dataset measuring Information Retrieval metrics (Recall@10, MRR@10, nDCG@10, and Filter Field F1).
 
   ```text
   Evaluation — 50 multilingual queries
@@ -40,84 +45,176 @@
   Latency p95     5.8 s
   ```
 
+---
+
 ## 🧠 System Architecture
 
-The architecture intentionally separates heavy data engineering (ETL/embedding) from the lightweight, highly concurrent FastAPI serving layer.
-
 ```mermaid
-flowchart LR
-  U["Multilingual Query"] --> Q["LLM Query Understanding<br/>(Lang detection, Rewrite, Filter Extraction)"]
-  Q --> C["Dataset-Value Canonicalization"]
-  C --> H["Qdrant Hybrid Search (Native RRF)"]
-  C -.-> D["Dense: Multilingual-E5"]
-  C -.-> B["Sparse: BM25"]
+flowchart TD
+  subgraph Client ["Frontend (React + Vite + TypeScript)"]
+    UI["Web UI"]
+  end
+
+  subgraph BackendLayer ["FastAPI Search Pipeline"]
+    Q["1. LLM Query Understanding<br/>(Language Detection, Filter Extraction, Rewrite)"]
+    C["2. Canonicalization & Validation"]
+    
+    subgraph Vectorization ["Parallel FastEmbed Vector Generation"]
+      D["Dense Embeddings<br/>(Multilingual-E5-Large)"]
+      B["Sparse Embeddings<br/>(Qdrant BM25)"]
+    end
+    
+    H["3. Qdrant Hybrid Retrieval<br/>(Native Reciprocal Rank Fusion)"]
+    R["4. LLM Grounded Answer Synthesis<br/>(Gemini 3.6 Flash Streaming SSE)"]
+  end
+
+  subgraph Storage ["Vector Database"]
+    V[("Qdrant Vector DB<br/>Named Vectors + Payload Indexes")]
+  end
+
+  subgraph Observability ["Observability & Tracing"]
+    LF["Langfuse v4 Server<br/>(Traces, Spans, Generation Latency, Tokens)"]
+  end
+
+  subgraph DataPipeline ["Offline / Background ETL"]
+    CSV["Steam CSV Dataset"] --> Ingest["Batch Ingestion Pipeline"]
+    Ingest --> E["FastEmbed Embeddings"]
+    E --> V
+  end
+
+  UI -- "POST /api/v1/search" --> Q
+  Q --> C
+  C --> D
+  C --> B
   D --> H
   B --> H
-  H --> R["LLM Grounded Summary (Streaming)"]
-  R --> A["React UI (SSE: Summary + Game Cards)"]
-  
-  CSV["Streamed Steam CSV"] --> N["Data Pipeline (ETL)"]
-  N --> E["CPU Embeddings in Batches"]
-  E --> V["Qdrant (Named vectors + Payload indexes)"]
-  V --> H
+  V <--> H
+  H --> R
+  R -- "text/event-stream (SSE)" --> UI
+
+  Q -. "Trace / Generation" .-> LF
+  D -. "Span" .-> LF
+  B -. "Span" .-> LF
+  H -. "Span" .-> LF
+  R -. "Trace / Generation" .-> LF
 ```
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Backend:** Python, FastAPI, AsyncIO, Uvicorn
-- **AI / ML Models:** Gemini 3.6 Flash (`gemini-3.6-flash`), `intfloat/multilingual-e5-large` (Multilingual Dense Embeddings), `Qdrant/bm25` (Sparse)
-- **Vector Database:** Qdrant
-- **Frontend:** React, TypeScript, Vite
-- **Infrastructure:** Docker, Docker Compose
-- **Quality Assurance:** Ruff, ESLint, Vitest, Pytest
+- **Backend Framework:** Python 3.12+, FastAPI, AsyncIO, Uvicorn, Pydantic v2
+- **AI & LLM Models:** Google Gemini 3.6 Flash (`gemini-3.6-flash`) via `google-genai`
+- **Embeddings:** `intfloat/multilingual-e5-large` (Dense, 1024-dim), `Qdrant/bm25` (Sparse) via `fastembed`
+- **Vector Database:** Qdrant v1.15+ (Native RRF & Payload Indexing)
+- **Observability & Tracing:** Langfuse v4 + PostgreSQL 16 (Self-hosted or Cloud)
+- **Security & Eval Frameworks:** Promptfoo (Adversarial Security Suite), Custom IR Benchmark Engine
+- **Frontend:** React 19, TypeScript, Vite, Server-Sent Events (SSE)
+- **Containerization & CI:** Docker, Docker Compose, Ruff, Vitest, Pytest
+
+---
 
 ## 💻 Quick Start (Local Development)
 
-**Prerequisites:** 
-- Docker Desktop/Engine with Docker Compose
-- At least 8 GB of free memory (for comfortable CPU embedding during ingestion)
-- Gemini API Key
+### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine with Docker Compose
+- At least 8 GB of free RAM (for comfortable CPU embedding during ingestion)
+- [Google Gemini API Key](https://aistudio.google.com/app/apikey)
 
-### 1. Configuration
-Clone the repository and set up your environment variables:
+---
+
+### 1. Clone & Configure Environment
+
 ```bash
 cp .env.example .env
 ```
-Open `.env` and add your `GEMINI_API_KEY`.
+
+Open `.env` and configure your keys:
+- Set `GEMINI_API_KEY=your_actual_gemini_key`.
+- *(Optional)* Configure Langfuse keys for tracing (`LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`).
+
+---
 
 ### 2. Data Preparation
-Ensure the raw Steam dataset is placed at `data/steam_games.csv` in the root of the project.
+
+Place your raw Steam dataset CSV at:
+```text
+data/steam_games.csv
+```
+
+---
 
 ### 3. Start Infrastructure
-Start the FastAPI backend, Qdrant vector database, and React frontend:
+
 ```bash
 docker compose up -d --build
 ```
 
-### 4. Run the ETL / Ingestion Pipeline (One-Time)
-The API is stateless and expects data to be present in Qdrant. You must run the ingestion script once to embed the games:
+#### Service Endpoints
+
+| Service | URL | Description |
+| :--- | :--- | :--- |
+| **Frontend UI** | [http://localhost:5173](http://localhost:5173) | Interactive Game Discovery UI |
+| **FastAPI Backend** | [http://localhost:8000](http://localhost:8000) | REST API & SSE Streaming |
+| **API Documentation** | [http://localhost:8000/docs](http://localhost:8000/docs) | Interactive Swagger/OpenAPI docs |
+| **Qdrant Dashboard** | [http://localhost:6333/dashboard](http://localhost:6333/dashboard) | Vector DB collections & points |
+| **Langfuse Dashboard** | [http://localhost:3000](http://localhost:3000) | LLM tracing & observability UI |
+
+---
+
+### 4. Run the Ingestion Pipeline (One-Time)
+
+The backend is stateless and queries vectors stored in Qdrant. Populate Qdrant by running the ETL ingestion:
+
 ```bash
-# Run the ETL pipeline inside the backend container
 docker compose exec backend python -m data_pipeline.ingest
 ```
 
-### 5. Access the App
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+---
 
-## 🧪 Development & Testing
+## 🧪 Development, Testing & Security Evals
+
+All development tasks are managed through the [`Makefile`](./Makefile):
 
 ```bash
-make lint                 # Ruff plus ESLint, TypeScript, and production build
-make test                 # backend unit and frontend component tests (vitest/pytest)
-make eval                 # Multilingual Recall/MRR/nDCG/filter-F1/latency report
+# Quality Assurance
+make lint                 # Run Ruff (backend) + ESLint, TypeScript check & build (frontend)
+make test                 # Run backend unit tests and frontend Vitest component tests
+make test-integration     # Run backend integration tests against live Qdrant
+
+# IR Benchmark Evaluation
+make eval                 # Run 50-query multilingual Recall, MRR, nDCG, and Filter F1 evaluation
+
+# Adversarial Security Evaluation (Promptfoo)
+make eval-security        # Execute automated security suite against POST /api/v1/search
+make eval-security-view   # Open interactive Promptfoo security report web interface
+
+# Vector Indexing
+make reindex              # Trigger backend reindexing via API
 ```
+
+### Promptfoo Security Evaluation Breakdown
+
+The security evaluation suite in [`evals/security/promptfoo/`](./evals/security/promptfoo/README.md) validates system resilience across 5 specialized test suites:
+
+| Category | Suite File | Invariants Tested |
+| :--- | :--- | :--- |
+| **A. Normal Controls** | `tests/normal_controls.yaml` | Standard search behavior, debug metadata validation, valid summaries |
+| **B. Instruction Hijacking** | `tests/instruction_hijacking.yaml` | Direct prompt injection, jailbreak attempts, code execution overrides |
+| **C. Structured Manipulation** | `tests/structured_output_manipulation.yaml` | Schema escape strings, SQL injection attempts, injected tag/OS filters |
+| **D. Secret Extraction** | `tests/secret_extraction.yaml` | Extraction of `GEMINI_API_KEY`, database credentials, raw system prompts |
+| **E. Multilingual Attacks** | `tests/multilingual_attacks.yaml` | Adversarial prompt injections in Ukrainian, Russian, and Polish |
+
+---
 
 ## 🐛 Troubleshooting
 
-- `API Error 503`: The API is running but the Qdrant index is empty. Did you run the ingestion script?
-- `OOM (Out of Memory)` during ingestion: Reduce `EMBEDDING_BATCH_SIZE` and `INGESTION_BATCH_SIZE` in your `.env` file.
+- **`API Error 503`**: The backend is operational but the Qdrant index is empty. Run `docker compose exec backend python -m data_pipeline.ingest`.
+- **`OOM (Out of Memory)` during Ingestion**: FastEmbed runs on CPU by default. Decrease `EMBEDDING_BATCH_SIZE` (e.g., `8`) and `INGESTION_BATCH_SIZE` (e.g., `32`) in `.env`.
+- **Langfuse Connection Warnings**: If you are not using Langfuse, set `LANGFUSE_ENABLED=false` or leave keys empty in `.env`; the `TracingService` will safely fallback to no-op mode.
 
 ---
+
 <p align="center">
   <i>Built with ❤️ for AI Engineering excellence.</i>
 </p>
