@@ -21,6 +21,7 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.6-flash}
       GEMINI_RPM: ${GEMINI_RPM:-30}
+      ENVIRONMENT: ${ENVIRONMENT:-default}
       QDRANT_URL: http://qdrant:6333
       QDRANT_COLLECTION: ${QDRANT_COLLECTION:-steam_games}
       STEAM_CSV_PATH: /app/data/steam_games.csv

@@ -70,6 +70,30 @@ function Diagnostics({ value }: { value: Record<string, unknown> }) {
   );
 }
 
+function formatRecommendation(raw: string) {
+  const text = raw
+    .replace(/^```(?:json)?\s*[\s\S]*?```\s*/i, "")
+    .replace(/^```(?:json)?\s*\{[\s\S]*$/i, "")
+    .trim();
+
+  if (!text) return null;
+
+  const paragraphs = text.split(/\n\s*\n/);
+  return paragraphs.map((para, pIdx) => {
+    const parts = para.split(/(\*\*.*?\*\*)/g);
+    return (
+      <p key={pIdx}>
+        {parts.map((part, idx) => {
+          if (part.startsWith("**") && part.endsWith("**") && part.length >= 4) {
+            return <strong key={idx}>{part.slice(2, -2)}</strong>;
+          }
+          return part;
+        })}
+      </p>
+    );
+  });
+}
+
 export default function App() {
   const [query, setQuery] = useState("");
   const [debug, setDebug] = useState(false);
@@ -176,7 +200,14 @@ export default function App() {
       {error && <section className="error-state" role="alert"><strong>{error.code}</strong><p>{error.message}</p>{error.request_id && <small>Request {error.request_id}</small>}</section>}
       {hasSearched && !error && (
         <section className="results">
-          <div className="summary"><span>AI SUMMARY</span><p>{summary || (loading ? "Thinking..." : "")}</p></div>
+          <div className="summary">
+            <span>AI RECOMMENDATION</span>
+            {summary ? (
+              formatRecommendation(summary)
+            ) : loading ? (
+              <p className="thinking">Thinking...</p>
+            ) : null}
+          </div>
           {results.length === 0 && !loading ? <div className="empty">No games to show. Try broadening the filters.</div> : results.map((game) => <GameCard key={game.app_id} game={game} />)}
           {debug && diagnostics && <Diagnostics value={diagnostics} />}
         </section>

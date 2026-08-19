@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", case_sensitive=False)
 
     app_name: str = "Steam Games RAG"
-    environment: str = "development"
+    environment: str = "default"
     log_level: str = "INFO"
     cors_origins: str = "http://localhost:5173,https://test.constantine.software"
 

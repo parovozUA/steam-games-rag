@@ -4,7 +4,7 @@ body { margin: 0; min-width: 320px; min-height: 100vh; background: radial-gradie
 button, input { font: inherit; }
 main { width: min(1060px, calc(100% - 32px)); margin: 0 auto; padding: 72px 0; }
 .hero { max-width: 820px; margin: 0 auto 44px; text-align: center; }
-.eyebrow, .summary span { color: #65e6ad; font-size: .72rem; letter-spacing: .2em; font-weight: 800; }
+.eyebrow, .summary > span { color: #65e6ad; font-size: .72rem; letter-spacing: .2em; font-weight: 800; }
 h1 { margin: 14px 0 8px; font-size: clamp(2.5rem, 8vw, 5.6rem); line-height: .98; letter-spacing: -.065em; }
 .hero > p { color: #a9b8b2; font-size: 1.15rem; }
 form { display: grid; grid-template-columns: 1fr auto; padding: 7px; margin-top: 32px; background: #f5f8f6; border-radius: 16px; box-shadow: 0 22px 60px #0007; }
@@ -19,6 +19,10 @@ form button:disabled { opacity: .45; cursor: not-allowed; }
 .results { display: grid; gap: 14px; }
 .summary { padding: 26px 28px; border-radius: 18px; background: linear-gradient(135deg, #15352b, #101c18); border: 1px solid #2c5446; }
 .summary p { margin: 9px 0 0; line-height: 1.6; font-size: 1.05rem; }
+.summary p + p { margin-top: 10px; }
+.summary strong { color: #65e6ad; font-weight: 700; }
+.summary .thinking { color: #8fa39b; font-style: italic; animation: pulse 1.5s infinite ease-in-out; }
+@keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 .game-link { color: inherit; text-decoration: none; border-radius: 16px; }
 .game-link:focus-visible { outline: 2px solid #65e6ad; outline-offset: 3px; }
 .game-card { display: grid; grid-template-columns: 270px 1fr; overflow: hidden; border-radius: 16px; border: 1px solid #22322d; background: #101815; transition: transform .2s, border-color .2s; }

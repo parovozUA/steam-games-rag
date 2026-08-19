@@ -82,4 +82,39 @@ describe("App", () => {
     expect(await screen.findByRole("alert")).toBeInTheDocument();
     expect(screen.getByText("NETWORK_ERROR")).toBeInTheDocument();
   });
+
+  it("renders AI recommendation with bold markdown and defensively strips raw JSON code fences", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
+      return createSseResponse({
+        results: [
+          {
+            app_id: 10,
+            name: "Orbit Together",
+            about: "Space co-op",
+            platforms: { windows: true, mac: false, linux: true },
+            rating_percent: 90,
+            reviews_count: 1000,
+            developers: [],
+            publishers: [],
+            genres: ["Adventure"],
+            categories: ["Co-op"],
+            tags: ["Space"],
+          },
+        ],
+        summary: "```json { \"recommendations\": [{ \"app_id\": 10, \"score\": 0.95 }] } ``` **Orbit Together** is the premier choice for cooperative space exploration.",
+      });
+    });
+
+    render(<App />);
+    const input = screen.getByRole("textbox", { name: "Search games" });
+    await userEvent.type(input, "space");
+    await userEvent.click(screen.getByRole("button", { name: "Search" }));
+
+    expect(await screen.findByText("AI RECOMMENDATION")).toBeInTheDocument();
+    const strongTitle = await screen.findByText("Orbit Together", { selector: "strong" });
+    expect(strongTitle).toBeInTheDocument();
+    expect(screen.getByText(/is the premier choice for cooperative space exploration\./)).toBeInTheDocument();
+    expect(screen.queryByText(/recommendations/)).not.toBeInTheDocument();
+  });
 });
+

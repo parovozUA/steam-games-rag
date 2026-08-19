@@ -77,13 +77,27 @@ class TracingService:
         if metadata:
             trace_meta.update(metadata)
 
+        trace_context = None
+        if request_id:
+            if isinstance(request_id, UUID):
+                trace_context = {"trace_id": request_id.hex}
+            else:
+                try:
+                    trace_context = {"trace_id": UUID(str(request_id)).hex}
+                except ValueError:
+                    clean_id = str(request_id).replace("-", "").strip()
+                    if len(clean_id) == 32 and all(c in "0123456789abcdefABCDEF" for c in clean_id):
+                        trace_context = {"trace_id": clean_id.lower()}
+                    else:
+                        trace_meta["request_id"] = str(request_id)
+
         try:
             with self._client.start_as_current_observation(
                 name=name,
                 as_type="chain",
                 input=input_data,
                 metadata=trace_meta,
-                trace_context={"trace_id": str(request_id)} if request_id else None,
+                trace_context=trace_context,
             ) as span:
                 yield span
         except Exception as exc:

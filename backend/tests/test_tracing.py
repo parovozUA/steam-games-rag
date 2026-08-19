@@ -47,12 +47,19 @@ def test_tracing_service_graceful_error_handling():
     )
     tracer = TracingService(settings)
     # Even if initialized or failing, operations must not throw unhandled exceptions
-    with tracer.start_trace(name="test-error-trace") as trace:
+    with tracer.start_trace(
+        name="test-error-trace", request_id="6823dcdf-de9f-5b94-9baf-b2f850cf9700"
+    ) as trace:
         trace.update(output="something")
         with tracer.span(name="span") as span:
             span.update(output=123)
         with tracer.generation(name="gen") as gen:
             gen.update(output="text")
 
+    # Non-UUID request ID should not raise
+    with tracer.start_trace(name="test-non-uuid-trace", request_id="custom-req-id") as trace:
+        trace.update(output="something")
+
     tracer.flush()
     tracer.shutdown()
+
