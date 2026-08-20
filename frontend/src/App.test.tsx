@@ -116,5 +116,48 @@ describe("App", () => {
     expect(screen.getByText(/is the premier choice for cooperative space exploration\./)).toBeInTheDocument();
     expect(screen.queryByText(/recommendations/)).not.toBeInTheDocument();
   });
+
+  it("renders AI recommendation bullet list items and ordered list items with bold game titles", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
+      return createSseResponse({
+        results: [
+          {
+            app_id: 20,
+            name: "Bloody Hell",
+            about: "Bullet-hell adventure",
+            platforms: { windows: true, mac: false, linux: true },
+            rating_percent: 95,
+            reviews_count: 5000,
+            developers: [],
+            publishers: [],
+            genres: ["Action"],
+            categories: ["Single-player"],
+            tags: ["Gore"],
+          },
+        ],
+        summary: `If you are looking for fast-paced action, **Bloody Hell** is an outstanding choice.
+
+Other bloody games worth considering include:
+* **Bloody Hallowfest**: A retro-style horror game.
+* **Bad Rats Show**: A physics puzzle game filled with cartoon blood.`,
+      });
+    });
+
+    render(<App />);
+    const input = screen.getByRole("textbox", { name: "Search games" });
+    await userEvent.type(input, "bloody");
+    await userEvent.click(screen.getByRole("button", { name: "Search" }));
+
+    expect(await screen.findByText("AI RECOMMENDATION")).toBeInTheDocument();
+    expect(await screen.findByText("Bloody Hell", { selector: "strong" })).toBeInTheDocument();
+    expect(screen.getByText("Other bloody games worth considering include:")).toBeInTheDocument();
+
+    const listItems = screen.getAllByRole("listitem");
+    expect(listItems).toHaveLength(2);
+    expect(screen.getByText("Bloody Hallowfest", { selector: "strong" })).toBeInTheDocument();
+    expect(screen.getByText(/A retro-style horror game\./)).toBeInTheDocument();
+    expect(screen.getByText("Bad Rats Show", { selector: "strong" })).toBeInTheDocument();
+    expect(screen.getByText(/A physics puzzle game filled with cartoon blood\./)).toBeInTheDocument();
+  });
 });
 

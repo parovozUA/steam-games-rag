@@ -16,35 +16,35 @@ function GameCard({ game }: { game: Game }) {
       rel="noopener noreferrer"
     >
       <article className="game-card">
-      <div className="image-wrap">
-        {game.header_image && !imageFailed ? (
-          <img src={game.header_image} alt="" onError={() => setImageFailed(true)} />
-        ) : (
-          <div className="image-fallback" aria-label="No game image">◈</div>
-        )}
-      </div>
-      <div className="game-body">
-        <div className="game-heading">
-          <h3>{game.name}</h3>
-          <span>{game.release_date ?? "Release date unknown"}</span>
+        <div className="image-wrap">
+          {game.header_image && !imageFailed ? (
+            <img src={game.header_image} alt="" onError={() => setImageFailed(true)} />
+          ) : (
+            <div className="image-fallback" aria-label="No game image">◈</div>
+          )}
         </div>
-        <div className="metrics">
-          <strong>{game.rating_percent == null ? "No rating" : `${game.rating_percent.toFixed(1)}%`}</strong>
-          <span>{game.reviews_count.toLocaleString()} reviews</span>
-          <span>{platforms.join(" · ") || "Platforms unknown"}</span>
+        <div className="game-body">
+          <div className="game-heading">
+            <h3>{game.name}</h3>
+            <span>{game.release_date ?? "Release date unknown"}</span>
+          </div>
+          <div className="metrics">
+            <strong>{game.rating_percent == null ? "No rating" : `${game.rating_percent.toFixed(1)}%`}</strong>
+            <span>{game.reviews_count.toLocaleString()} reviews</span>
+            <span>{platforms.join(" · ") || "Platforms unknown"}</span>
+          </div>
+          <p>{game.about || "No description available."}</p>
+          <div className="chips">
+            {[...game.genres, ...game.tags].slice(0, 7).map((tag) => <span key={tag}>{tag}</span>)}
+          </div>
+          {(game.developers.length > 0 || game.publishers.length > 0) && (
+            <small>
+              {game.developers.length > 0 && <>By {game.developers.join(", ")}</>}
+              {game.publishers.length > 0 && <> · Published by {game.publishers.join(", ")}</>}
+            </small>
+          )}
         </div>
-        <p>{game.about || "No description available."}</p>
-        <div className="chips">
-          {[...game.genres, ...game.tags].slice(0, 7).map((tag) => <span key={tag}>{tag}</span>)}
-        </div>
-        {(game.developers.length > 0 || game.publishers.length > 0) && (
-          <small>
-            {game.developers.length > 0 && <>By {game.developers.join(", ")}</>}
-            {game.publishers.length > 0 && <> · Published by {game.publishers.join(", ")}</>}
-          </small>
-        )}
-      </div>
-    </article>
+      </article>
     </a>
   );
 }
@@ -70,6 +70,69 @@ function Diagnostics({ value }: { value: Record<string, unknown> }) {
   );
 }
 
+type MarkdownBlock =
+  | { type: "paragraph"; content: string }
+  | { type: "ul"; items: string[] }
+  | { type: "ol"; items: string[] };
+
+function renderInline(text: string) {
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, idx) => {
+    if (part.startsWith("**") && part.endsWith("**") && part.length >= 4) {
+      return <strong key={idx}>{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+}
+
+function parseMarkdownBlocks(text: string): MarkdownBlock[] {
+  const rawLines = text.replace(/\r\n/g, "\n").split("\n");
+  const blocks: MarkdownBlock[] = [];
+  let currentBlock: MarkdownBlock | null = null;
+
+  for (const rawLine of rawLines) {
+    const trimmed = rawLine.trim();
+    if (!trimmed) {
+      currentBlock = null;
+      continue;
+    }
+
+    const ulMatch = trimmed.match(/^[-*+]\s+(.+)$/);
+    const olMatch = trimmed.match(/^\d+[.)]\s+(.+)$/);
+
+    if (ulMatch) {
+      const lastBlock = blocks[blocks.length - 1];
+      if (lastBlock && lastBlock.type === "ul") {
+        lastBlock.items.push(ulMatch[1]);
+        currentBlock = lastBlock;
+      } else {
+        currentBlock = { type: "ul", items: [ulMatch[1]] };
+        blocks.push(currentBlock);
+      }
+    } else if (olMatch) {
+      const lastBlock = blocks[blocks.length - 1];
+      if (lastBlock && lastBlock.type === "ol") {
+        lastBlock.items.push(olMatch[1]);
+        currentBlock = lastBlock;
+      } else {
+        currentBlock = { type: "ol", items: [olMatch[1]] };
+        blocks.push(currentBlock);
+      }
+    } else {
+      if (currentBlock && currentBlock.type === "paragraph") {
+        currentBlock.content += ` ${trimmed}`;
+      } else if (currentBlock && (currentBlock.type === "ul" || currentBlock.type === "ol")) {
+        currentBlock.items[currentBlock.items.length - 1] += ` ${trimmed}`;
+      } else {
+        currentBlock = { type: "paragraph", content: trimmed };
+        blocks.push(currentBlock);
+      }
+    }
+  }
+
+  return blocks;
+}
+
 function formatRecommendation(raw: string) {
   const text = raw
     .replace(/^```(?:json)?\s*[\s\S]*?```\s*/i, "")
@@ -78,19 +141,27 @@ function formatRecommendation(raw: string) {
 
   if (!text) return null;
 
-  const paragraphs = text.split(/\n\s*\n/);
-  return paragraphs.map((para, pIdx) => {
-    const parts = para.split(/(\*\*.*?\*\*)/g);
-    return (
-      <p key={pIdx}>
-        {parts.map((part, idx) => {
-          if (part.startsWith("**") && part.endsWith("**") && part.length >= 4) {
-            return <strong key={idx}>{part.slice(2, -2)}</strong>;
-          }
-          return part;
-        })}
-      </p>
-    );
+  const blocks = parseMarkdownBlocks(text);
+  return blocks.map((block, bIdx) => {
+    if (block.type === "ul") {
+      return (
+        <ul key={bIdx}>
+          {block.items.map((item, iIdx) => (
+            <li key={iIdx}>{renderInline(item)}</li>
+          ))}
+        </ul>
+      );
+    }
+    if (block.type === "ol") {
+      return (
+        <ol key={bIdx}>
+          {block.items.map((item, iIdx) => (
+            <li key={iIdx}>{renderInline(item)}</li>
+          ))}
+        </ol>
+      );
+    }
+    return <p key={bIdx}>{renderInline(block.content)}</p>;
   });
 }
 
@@ -113,7 +184,7 @@ export default function App() {
     const id = ++sequence.current;
     const controller = new AbortController();
     activeRequest.current = { id, controller };
-    
+
     setLoading(true);
     setError(null);
     setResults([]);
@@ -146,16 +217,16 @@ export default function App() {
         if (activeRequest.current?.id !== id) return;
 
         buffer += decoder.decode(value, { stream: true });
-        
+
         const chunks = buffer.split("\n\n");
         buffer = chunks.pop() || "";
 
         for (const chunk of chunks) {
           if (!chunk.trim()) continue;
-          
+
           let eventType = "message";
           let data = "";
-          
+
           for (const line of chunk.split("\n")) {
             if (line.startsWith("event: ")) {
               eventType = line.slice("event: ".length).trim();
@@ -187,11 +258,11 @@ export default function App() {
   return (
     <main>
       <header className="hero">
-        <div className="eyebrow">LOCAL HYBRID DISCOVERY</div>
-        <h1>Find the game you mean.</h1>
-        <p>Search Steam’s catalog naturally, in any language.</p>
+        <div className="eyebrow">SEMANTIC GAME DISCOVERY</div>
+        <h2>Search Steam by meaning.</h2>
+        <p>Search naturally across Steam’s catalog, in any language.</p>
         <form onSubmit={submit}>
-          <input aria-label="Search games" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Try: cooperative space survival for Linux…" />
+          <input aria-label="Search games" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Open-world games with exploration and base building" />
           <button disabled={loading || !query.trim()}>{loading ? "Searching…" : "Search"}</button>
         </form>
         <label className="debug-toggle"><input type="checkbox" checked={debug} onChange={(event) => setDebug(event.target.checked)} /> Show search diagnostics</label>

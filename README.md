@@ -9,21 +9,19 @@
     <img src="https://img.shields.io/badge/Gemini-8E75B2?style=for-the-badge&logo=googlebard&logoColor=white" alt="Gemini" />
     <img src="https://img.shields.io/badge/Langfuse-000000?style=for-the-badge&logo=langfuse&logoColor=white" alt="Langfuse" />
     <img src="https://img.shields.io/badge/Promptfoo-6A0DAD?style=for-the-badge&logo=shield&logoColor=white" alt="Promptfoo" />
-    <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
-    <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
     <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
   </p>
 
   <p>
     <a href="https://steam.constantine.software/" target="_blank">
-      <kbd> <br> <big><big><strong>🔴 TRY THE LIVE DEMO 🔴</strong></big></big> <br> </kbd>
+      <kbd> <br> <big><big><strong>▶ Try the Live Demo</strong></big></big> <br> </kbd>
     </a>
   </p>
 </div>
 
 ---
 
-> **Overview**: This project is a flagship demonstration of advanced **AI Engineering** principles. It goes beyond basic Retrieval-Augmented Generation (RAG) by implementing **Agentic Query Understanding**, **Native Hybrid Search (Dense + Sparse with RRF)**, **Production Observability & Tracing (Langfuse v4)**, **Automated Adversarial Security Testing (Promptfoo)**, and **Streaming Generative Summaries**. Built for scale, it is rigorously evaluated against Information Retrieval (IR) metrics and fully containerized for deployment.
+> **Overview**: Steam Games RAG is an end-to-end AI Engineering portfolio project for discovering Steam games through natural-language search. It goes beyond basic Retrieval-Augmented Generation (RAG) by implementing **Agentic Query Understanding**, **Native Hybrid Search (Dense + Sparse with RRF)**, **Production Observability & Tracing (Langfuse v4)**, **Automated Adversarial Security Testing (Promptfoo)**, and **Streaming Generative Summaries**. Built for scale, it is rigorously evaluated against Information Retrieval (IR) metrics and fully containerized for deployment.
 
 ## 🚀 Key AI Engineering Capabilities
 
