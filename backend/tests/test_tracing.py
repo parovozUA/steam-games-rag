@@ -62,4 +62,3 @@ def test_tracing_service_graceful_error_handling():
 
     tracer.flush()
     tracer.shutdown()
-
